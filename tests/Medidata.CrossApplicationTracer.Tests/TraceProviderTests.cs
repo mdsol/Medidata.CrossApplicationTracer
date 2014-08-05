@@ -16,7 +16,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceProvider = new TraceProvider();
 
             // Assert
-            Guid.Parse(traceProvider.TraceId);
+            long.Parse(traceProvider.TraceId);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
         }
@@ -85,7 +85,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             // Assert
             Assert.AreEqual(traceProvider.TraceId, nextTraceProvider.TraceId);
-            Guid.Parse(nextTraceProvider.SpanId);
+            long.Parse(nextTraceProvider.SpanId);
             Assert.AreEqual(traceProvider.SpanId, nextTraceProvider.ParentSpanId);
         }
     }
