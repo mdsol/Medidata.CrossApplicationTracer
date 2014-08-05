@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Web.Fakes;
-using Microsoft.QualityTools.Testing.Fakes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ploeh.AutoFixture;
 
@@ -18,7 +17,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             // Assert
             Guid.Parse(traceProvider.TraceId);
-            Guid.Parse(traceProvider.SpanId);
+            Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
         }
 
@@ -51,8 +50,11 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             // Assert
             Assert.AreEqual(traceId, traceProvider.TraceId);
-            Assert.AreEqual(spanId, traceProvider.SpanId);
-            Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
+            Guid.Parse(traceProvider.SpanId);
+            Assert.AreNotEqual(traceId, traceProvider.SpanId);
+            Assert.AreNotEqual(spanId, traceProvider.SpanId);
+            Assert.AreNotEqual(parentSpanId, traceProvider.SpanId);
+            Assert.AreEqual(spanId, traceProvider.ParentSpanId);
         }
     }
 }

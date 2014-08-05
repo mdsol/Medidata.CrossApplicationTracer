@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Web;
 
 namespace Medidata.CrossApplicationTracer
@@ -29,20 +30,21 @@ namespace Medidata.CrossApplicationTracer
         /// <param name="httpContext">the httpContext</param>
         public TraceProvider(HttpContextBase httpContext = null)
         {
+            string headerTraceId = null;
+            string headerSpanId = null;
+            string headerParentSpanId = null;
+
             if (httpContext != null)
             {
                 // zipkin use the following X-Headers to propagate the trace information
-                TraceId = httpContext.Request.Headers["X-B3-TraceId"];
-                SpanId = httpContext.Request.Headers["X-B3-SpanId"];
-                ParentSpanId = httpContext.Request.Headers["X-B3-ParentSpanId"];
+                headerTraceId = httpContext.Request.Headers["X-B3-TraceId"];
+                headerSpanId = httpContext.Request.Headers["X-B3-SpanId"];
+                headerParentSpanId = httpContext.Request.Headers["X-B3-ParentSpanId"];
             }
 
-            TraceId = TraceId ?? Guid.NewGuid().ToString();
-            SpanId = SpanId ?? Guid.NewGuid().ToString();
-            if (string.IsNullOrWhiteSpace(ParentSpanId))
-            {
-                ParentSpanId = string.Empty;    
-            }
+            TraceId = !string.IsNullOrWhiteSpace(headerTraceId) ? headerTraceId : Guid.NewGuid().ToString();
+            SpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) ? Guid.NewGuid().ToString() : TraceId;
+            ParentSpanId = !string.IsNullOrWhiteSpace(headerSpanId) ? headerSpanId : string.Empty;
         }
     }
 }
