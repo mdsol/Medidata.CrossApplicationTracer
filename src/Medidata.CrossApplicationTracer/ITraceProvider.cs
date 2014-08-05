@@ -19,5 +19,11 @@
         /// Gets a ParentSpanId
         /// </summary>
         string ParentSpanId { get; }
+
+        /// <summary>
+        /// Gets a Trace for outgoing HTTP request.
+        /// </summary>
+        /// <returns>The trace</returns>
+        ITraceProvider GetNext();
     }
 }
