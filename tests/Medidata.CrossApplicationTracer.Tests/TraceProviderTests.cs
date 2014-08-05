@@ -50,11 +50,43 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             // Assert
             Assert.AreEqual(traceId, traceProvider.TraceId);
-            Guid.Parse(traceProvider.SpanId);
-            Assert.AreNotEqual(traceId, traceProvider.SpanId);
-            Assert.AreNotEqual(spanId, traceProvider.SpanId);
-            Assert.AreNotEqual(parentSpanId, traceProvider.SpanId);
-            Assert.AreEqual(spanId, traceProvider.ParentSpanId);
+            Assert.AreEqual(spanId, traceProvider.SpanId);
+            Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
+        }
+
+        [TestMethod]
+        public void GetNext()
+        {
+            // Arrange
+            var fixture = new Fixture();
+            var traceId = fixture.Create<string>();
+            var spanId = fixture.Create<string>();
+            var parentSpanId = fixture.Create<string>();
+
+            var httpRequestFake = new StubHttpRequestBase
+            {
+                HeadersGet = () => new NameValueCollection
+                {
+                    { "X-B3-TraceId", traceId },
+                    { "X-B3-SpanId", spanId },
+                    { "X-B3-ParentSpanId", parentSpanId },
+                }
+            };
+
+            var httpContextFake = new StubHttpContextBase
+            {
+                RequestGet = () => httpRequestFake
+            };
+
+            var traceProvider = new TraceProvider(httpContextFake);
+
+            // Act
+            var nextTraceProvider = traceProvider.GetNext();
+
+            // Assert
+            Assert.AreEqual(traceProvider.TraceId, nextTraceProvider.TraceId);
+            Guid.Parse(nextTraceProvider.SpanId);
+            Assert.AreEqual(traceProvider.SpanId, nextTraceProvider.ParentSpanId);
         }
     }
 }

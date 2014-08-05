@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Web;
 
 namespace Medidata.CrossApplicationTracer
@@ -43,8 +42,22 @@ namespace Medidata.CrossApplicationTracer
             }
 
             TraceId = !string.IsNullOrWhiteSpace(headerTraceId) ? headerTraceId : Guid.NewGuid().ToString();
-            SpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) ? Guid.NewGuid().ToString() : TraceId;
-            ParentSpanId = !string.IsNullOrWhiteSpace(headerSpanId) ? headerSpanId : string.Empty;
+            SpanId = !string.IsNullOrWhiteSpace(headerSpanId) ? headerSpanId : TraceId;
+            ParentSpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) ? headerParentSpanId : string.Empty;
+        }
+
+        /// <summary>
+        /// Gets a Trace for outgoing HTTP request.
+        /// </summary>
+        /// <returns>The trace</returns>
+        public ITraceProvider GetNext()
+        {
+            return new TraceProvider
+            {
+                TraceId = this.TraceId,
+                SpanId = Guid.NewGuid().ToString(),
+                ParentSpanId = this.SpanId,
+            };
         }
     }
 }
