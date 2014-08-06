@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Web;
 
 namespace Medidata.CrossApplicationTracer
@@ -41,10 +42,9 @@ namespace Medidata.CrossApplicationTracer
                 headerParentSpanId = httpContext.Request.Headers["X-B3-ParentSpanId"];
             }
 
-            long result;
-            TraceId = !string.IsNullOrWhiteSpace(headerTraceId) && Int64.TryParse(headerTraceId, out result) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
-            SpanId = !string.IsNullOrWhiteSpace(headerSpanId) && Int64.TryParse(headerSpanId, out result) ? headerSpanId : TraceId;
-            ParentSpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) && Int64.TryParse(headerParentSpanId, out result) ? headerParentSpanId : string.Empty;
+            TraceId = !string.IsNullOrWhiteSpace(headerTraceId) && Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
+            SpanId = !string.IsNullOrWhiteSpace(headerSpanId) && Parse(headerSpanId) ? headerSpanId : TraceId;
+            ParentSpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) && Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
            
             if (SpanId == ParentSpanId)
             {
@@ -64,6 +64,17 @@ namespace Medidata.CrossApplicationTracer
                 SpanId = GenerateHexEncodedInt64FromNewGuid(),
                 ParentSpanId = this.SpanId,
             };
+        }
+
+        /// <summary>
+        /// Parse id value
+        /// </summary>
+        /// <param name="value">header's value</param>
+        /// <returns>true: parsed</returns>
+        private bool Parse(string value)
+        {
+            long result;
+            return Int64.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
         }
 
         /// <summary>

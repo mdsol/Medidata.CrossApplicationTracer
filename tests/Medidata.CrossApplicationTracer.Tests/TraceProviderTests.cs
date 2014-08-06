@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Web.Fakes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ploeh.AutoFixture;
@@ -26,9 +27,9 @@ namespace Medidata.CrossApplicationTracer.Tests
         {
             // Arrange
             var fixture = new Fixture();
-            var traceId = fixture.Create<long>().ToString();
-            var spanId = fixture.Create<long>().ToString();
-            var parentSpanId = fixture.Create<long>().ToString();
+            var traceId = Convert.ToString(fixture.Create<long>(), 16);
+            var spanId = Convert.ToString(fixture.Create<long>(), 16);
+            var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -94,8 +95,8 @@ namespace Medidata.CrossApplicationTracer.Tests
         {
             // Arrange
             var fixture = new Fixture();
-            var traceId = fixture.Create<long>().ToString();
-            var spanId = fixture.Create<long>().ToString();
+            var traceId = Convert.ToString(fixture.Create<long>(), 16);
+            var spanId = Convert.ToString(fixture.Create<long>(), 16);
             var parentSpanId = spanId;
 
             var httpRequestFake = new StubHttpRequestBase
