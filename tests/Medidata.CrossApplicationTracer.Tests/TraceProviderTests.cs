@@ -16,7 +16,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceProvider = new TraceProvider();
 
             // Assert
-            ulong.Parse(traceProvider.TraceId);
+            Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
         }
@@ -26,9 +26,9 @@ namespace Medidata.CrossApplicationTracer.Tests
         {
             // Arrange
             var fixture = new Fixture();
-            var traceId = fixture.Create<ulong>().ToString();
-            var spanId = fixture.Create<ulong>().ToString();
-            var parentSpanId = fixture.Create<ulong>().ToString();
+            var traceId = fixture.Create<long>().ToString();
+            var spanId = fixture.Create<long>().ToString();
+            var parentSpanId = fixture.Create<long>().ToString();
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -83,7 +83,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             // Assert
             Assert.AreNotEqual(traceId, traceProvider.TraceId);
-            ulong.Parse(traceProvider.TraceId);
+            Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
         }
@@ -94,8 +94,8 @@ namespace Medidata.CrossApplicationTracer.Tests
         {
             // Arrange
             var fixture = new Fixture();
-            var traceId = fixture.Create<ulong>().ToString();
-            var spanId = fixture.Create<ulong>().ToString();
+            var traceId = fixture.Create<long>().ToString();
+            var spanId = fixture.Create<long>().ToString();
             var parentSpanId = spanId;
 
             var httpRequestFake = new StubHttpRequestBase
@@ -122,9 +122,9 @@ namespace Medidata.CrossApplicationTracer.Tests
         {
             // Arrange
             var fixture = new Fixture();
-            var traceId = fixture.Create<ulong>().ToString();
-            var spanId = fixture.Create<ulong>().ToString();
-            var parentSpanId = fixture.Create<ulong>().ToString();
+            var traceId = fixture.Create<long>().ToString();
+            var spanId = fixture.Create<long>().ToString();
+            var parentSpanId = fixture.Create<long>().ToString();
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -148,7 +148,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             // Assert
             Assert.AreEqual(traceProvider.TraceId, nextTraceProvider.TraceId);
-            ulong.Parse(nextTraceProvider.SpanId);
+            Convert.ToInt64(nextTraceProvider.SpanId, 16);
             Assert.AreEqual(traceProvider.SpanId, nextTraceProvider.ParentSpanId);
         }
     }
