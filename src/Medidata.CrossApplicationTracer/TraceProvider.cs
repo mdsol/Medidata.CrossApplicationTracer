@@ -41,10 +41,15 @@ namespace Medidata.CrossApplicationTracer
                 headerParentSpanId = httpContext.Request.Headers["X-B3-ParentSpanId"];
             }
 
-            long result;
-            TraceId = !string.IsNullOrWhiteSpace(headerTraceId) && Int64.TryParse(headerTraceId, out result) ? headerTraceId : GenerateInt64FromNewGuid().ToString();
-            SpanId = !string.IsNullOrWhiteSpace(headerSpanId) && Int64.TryParse(headerSpanId, out result) ? headerSpanId : TraceId;
-            ParentSpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) && Int64.TryParse(headerParentSpanId, out result) ? headerParentSpanId : string.Empty;
+            ulong result;
+            TraceId = !string.IsNullOrWhiteSpace(headerTraceId) && UInt64.TryParse(headerTraceId, out result) ? headerTraceId : GenerateUInt64FromNewGuid().ToString();
+            SpanId = !string.IsNullOrWhiteSpace(headerSpanId) && UInt64.TryParse(headerSpanId, out result) ? headerSpanId : TraceId;
+            ParentSpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) && UInt64.TryParse(headerParentSpanId, out result) ? headerParentSpanId : string.Empty;
+           
+            if (SpanId == ParentSpanId)
+            {
+                throw new ArgumentException("x-b3-SpanId and x-b3-ParentSpanId must not be the same value.");
+            }
         }
 
         /// <summary>
@@ -56,18 +61,18 @@ namespace Medidata.CrossApplicationTracer
             return new TraceProvider
             {
                 TraceId = this.TraceId,
-                SpanId = GenerateInt64FromNewGuid().ToString(),
+                SpanId = GenerateUInt64FromNewGuid().ToString(),
                 ParentSpanId = this.SpanId,
             };
         }
 
         /// <summary>
-        /// Generate a Int64 from new Guid.
+        /// Generate a UInt64 from new Guid.
         /// </summary>
-        /// <returns>The int64</returns>
-        private long GenerateInt64FromNewGuid()
+        /// <returns>The uint64</returns>
+        private ulong GenerateUInt64FromNewGuid()
         {
-            return BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0);
+            return BitConverter.ToUInt64(Guid.NewGuid().ToByteArray(), 0);
         }
     }
 }
