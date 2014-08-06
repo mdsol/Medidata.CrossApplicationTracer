@@ -3,7 +3,7 @@
   <metadata>
     <id>Medidata.CrossApplicationTracer</id>
     <title>Cross application tracer library</title>
-    <version>1.0.0</version>
+    <version>$version$</version>
     <authors>Kenya Matsumoto</authors>
     <projectUrl>https://github.com/mdsol/Medidata.CrossApplicationTracer</projectUrl>
     <description>This library provides trace_id, span_id and parent_span_id for logging.</description>

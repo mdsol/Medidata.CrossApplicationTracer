@@ -41,9 +41,10 @@ namespace Medidata.CrossApplicationTracer
                 headerParentSpanId = httpContext.Request.Headers["X-B3-ParentSpanId"];
             }
 
-            TraceId = !string.IsNullOrWhiteSpace(headerTraceId) ? headerTraceId : Guid.NewGuid().ToString();
-            SpanId = !string.IsNullOrWhiteSpace(headerSpanId) ? headerSpanId : TraceId;
-            ParentSpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) ? headerParentSpanId : string.Empty;
+            long result;
+            TraceId = !string.IsNullOrWhiteSpace(headerTraceId) && Int64.TryParse(headerTraceId, out result) ? headerTraceId : GenerateInt64FromNewGuid().ToString();
+            SpanId = !string.IsNullOrWhiteSpace(headerSpanId) && Int64.TryParse(headerSpanId, out result) ? headerSpanId : TraceId;
+            ParentSpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) && Int64.TryParse(headerParentSpanId, out result) ? headerParentSpanId : string.Empty;
         }
 
         /// <summary>
@@ -55,9 +56,18 @@ namespace Medidata.CrossApplicationTracer
             return new TraceProvider
             {
                 TraceId = this.TraceId,
-                SpanId = Guid.NewGuid().ToString(),
+                SpanId = GenerateInt64FromNewGuid().ToString(),
                 ParentSpanId = this.SpanId,
             };
+        }
+
+        /// <summary>
+        /// Generate a Int64 from new Guid.
+        /// </summary>
+        /// <returns>The int64</returns>
+        private long GenerateInt64FromNewGuid()
+        {
+            return BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0);
         }
     }
 }
