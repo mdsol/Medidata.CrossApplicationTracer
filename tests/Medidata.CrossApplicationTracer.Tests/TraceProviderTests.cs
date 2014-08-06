@@ -16,7 +16,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceProvider = new TraceProvider();
 
             // Assert
-            long.Parse(traceProvider.TraceId);
+            ulong.Parse(traceProvider.TraceId);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
         }
@@ -26,9 +26,9 @@ namespace Medidata.CrossApplicationTracer.Tests
         {
             // Arrange
             var fixture = new Fixture();
-            var traceId = fixture.Create<long>().ToString();
-            var spanId = fixture.Create<long>().ToString();
-            var parentSpanId = fixture.Create<long>().ToString();
+            var traceId = fixture.Create<ulong>().ToString();
+            var spanId = fixture.Create<ulong>().ToString();
+            var parentSpanId = fixture.Create<ulong>().ToString();
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -83,9 +83,38 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             // Assert
             Assert.AreNotEqual(traceId, traceProvider.TraceId);
-            long.Parse(traceProvider.TraceId);
+            ulong.Parse(traceProvider.TraceId);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void ConstructorWithSameSpanAndParentSpan()
+        {
+            // Arrange
+            var fixture = new Fixture();
+            var traceId = fixture.Create<ulong>().ToString();
+            var spanId = fixture.Create<ulong>().ToString();
+            var parentSpanId = spanId;
+
+            var httpRequestFake = new StubHttpRequestBase
+            {
+                HeadersGet = () => new NameValueCollection
+                {
+                    { "X-B3-TraceId", traceId },
+                    { "X-B3-SpanId", spanId },
+                    { "X-B3-ParentSpanId", parentSpanId },
+                }
+            };
+
+            var httpContextFake = new StubHttpContextBase
+            {
+                RequestGet = () => httpRequestFake
+            };
+
+            // Act
+            var traceProvider = new TraceProvider(httpContextFake);
         }
 
         [TestMethod]
@@ -93,9 +122,9 @@ namespace Medidata.CrossApplicationTracer.Tests
         {
             // Arrange
             var fixture = new Fixture();
-            var traceId = fixture.Create<long>().ToString();
-            var spanId = fixture.Create<long>().ToString();
-            var parentSpanId = fixture.Create<long>().ToString();
+            var traceId = fixture.Create<ulong>().ToString();
+            var spanId = fixture.Create<ulong>().ToString();
+            var parentSpanId = fixture.Create<ulong>().ToString();
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -119,7 +148,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             // Assert
             Assert.AreEqual(traceProvider.TraceId, nextTraceProvider.TraceId);
-            long.Parse(nextTraceProvider.SpanId);
+            ulong.Parse(nextTraceProvider.SpanId);
             Assert.AreEqual(traceProvider.SpanId, nextTraceProvider.ParentSpanId);
         }
     }
