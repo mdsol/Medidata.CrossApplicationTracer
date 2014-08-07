@@ -10,6 +10,11 @@ namespace Medidata.CrossApplicationTracer
     public class TraceProvider : ITraceProvider
     {
         /// <summary>
+        /// Key name for HttpContext.Items
+        /// </summary>
+        private const string KEY = "Medidata.CrossApplicationTracer.TraceProvider";
+
+        /// <summary>
         /// Gets a TraceId
         /// </summary>
         public string TraceId { get; private set; }
@@ -28,13 +33,13 @@ namespace Medidata.CrossApplicationTracer
         /// Initializes a new instance of the TraceProvider class.
         /// </summary>
         /// <param name="httpContext">the httpContext</param>
-        public TraceProvider(HttpContextBase httpContext = null)
+        private TraceProvider(HttpContextBase httpContext = null)
         {
             string headerTraceId = null;
             string headerSpanId = null;
             string headerParentSpanId = null;
 
-            if (httpContext != null)
+            if (httpContext != null && httpContext.Handler != null)
             {
                 // zipkin use the following X-Headers to propagate the trace information
                 headerTraceId = httpContext.Request.Headers["X-B3-TraceId"];
@@ -42,14 +47,36 @@ namespace Medidata.CrossApplicationTracer
                 headerParentSpanId = httpContext.Request.Headers["X-B3-ParentSpanId"];
             }
 
-            TraceId = !string.IsNullOrWhiteSpace(headerTraceId) && Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
-            SpanId = !string.IsNullOrWhiteSpace(headerSpanId) && Parse(headerSpanId) ? headerSpanId : TraceId;
-            ParentSpanId = !string.IsNullOrWhiteSpace(headerParentSpanId) && Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
+            TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
+            SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
+            ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
            
             if (SpanId == ParentSpanId)
             {
                 throw new ArgumentException("x-b3-SpanId and x-b3-ParentSpanId must not be the same value.");
             }
+        }
+
+        /// <summary>
+        /// GetInstance
+        /// </summary>
+        /// <param name="httpContext">The httpContext</param>
+        /// <returns>Return a provider from HttpContext if httpContext has TraceProvier. Return a new instance if httContext is null or httContext doens't have TraceProvider.</returns>
+        public static ITraceProvider GetInstance(HttpContextBase httpContext = null)
+        {
+            if (httpContext != null && httpContext.Items.Contains(KEY))
+            {
+                return httpContext.Items[KEY] as ITraceProvider;
+            }
+
+            var traceProvider = new TraceProvider(httpContext);
+
+            if (httpContext != null)
+            {
+                httpContext.Items.Add(KEY, traceProvider);
+            }
+
+            return traceProvider;
         }
 
         /// <summary>
@@ -74,7 +101,7 @@ namespace Medidata.CrossApplicationTracer
         private bool Parse(string value)
         {
             long result;
-            return Int64.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
+            return !string.IsNullOrWhiteSpace(value) && Int64.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
         }
 
         /// <summary>
