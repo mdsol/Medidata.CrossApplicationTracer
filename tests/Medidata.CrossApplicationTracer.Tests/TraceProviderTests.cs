@@ -11,10 +11,10 @@ namespace Medidata.CrossApplicationTracer.Tests
     public class TraceProviderTests
     {
         [TestMethod]
-        public void GetInstanceWithNullHttpContext()
+        public void ConstructorWithNullHttpContext()
         {
             // Arrange & Act
-            var traceProvider = TraceProvider.GetInstance();
+            var traceProvider = new TraceProvider();
 
             // Assert
             Convert.ToInt64(traceProvider.TraceId, 16);
@@ -23,7 +23,7 @@ namespace Medidata.CrossApplicationTracer.Tests
         }
 
         [TestMethod]
-        public void GetInstanceWithHttpContextHavingAllIdValues()
+        public void ConstructorWithHttpContextHavingAllIdValues()
         {
             // Arrange
             var fixture = new Fixture();
@@ -43,12 +43,13 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             var httpContextFake = new StubHttpContextBase
             {
+                HandlerGet = () => new StubIHttpHandler(),
                 RequestGet = () => httpRequestFake,
                 ItemsGet = () => new ListDictionary()
             };
 
             // Act
-            var traceProvider = TraceProvider.GetInstance(httpContextFake);
+            var traceProvider = new TraceProvider(httpContextFake);
 
             // Assert
             Assert.AreEqual(traceId, traceProvider.TraceId);
@@ -57,7 +58,7 @@ namespace Medidata.CrossApplicationTracer.Tests
         }
 
         [TestMethod]
-        public void GetInstanceWithHttpContextHavingInvalidIdValues()
+        public void ConstructorWithHttpContextHavingInvalidIdValues()
         {
             // Arrange
             var fixture = new Fixture();
@@ -82,7 +83,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            var traceProvider = TraceProvider.GetInstance(httpContextFake);
+            var traceProvider = new TraceProvider(httpContextFake);
 
             // Assert
             Assert.AreNotEqual(traceId, traceProvider.TraceId);
@@ -92,7 +93,7 @@ namespace Medidata.CrossApplicationTracer.Tests
         }
 
         [TestMethod]
-        public void GetInstanceHavingTraceProviderInHttpContext()
+        public void ConstructorWithHavingTraceProviderInHttpContext()
         {
             // Arrange
             var fixture = new Fixture();
@@ -113,6 +114,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             var httpContextFake1 = new StubHttpContextBase
             {
+                HandlerGet = () => new StubIHttpHandler(),
                 RequestGet = () => httpRequestFake,
                 ItemsGet = () => new StubIDictionary
                 {
@@ -122,10 +124,11 @@ namespace Medidata.CrossApplicationTracer.Tests
                 }
             };
 
-            var traceProvider1 = TraceProvider.GetInstance(httpContextFake1);
+            var traceProvider1 = new TraceProvider(httpContextFake1);
 
             var httpContextFake2 = new StubHttpContextBase
             {
+                HandlerGet = () => new StubIHttpHandler(),
                 RequestGet = () => httpRequestFake,
                 ItemsGet = () => new StubIDictionary
                 {
@@ -136,7 +139,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            var traceProvider2 = TraceProvider.GetInstance(httpContextFake2);
+            var traceProvider2 = new TraceProvider(httpContextFake2);
 
             // Assert
             Assert.AreEqual(traceProvider2.TraceId, traceProvider1.TraceId);
@@ -146,7 +149,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void GetInstanceWithHttpContextHavingSameSpanAndParentSpan()
+        public void ConstructorWithHttpContextHavingSameSpanAndParentSpan()
         {
             // Arrange
             var fixture = new Fixture();
@@ -166,12 +169,13 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             var httpContextFake = new StubHttpContextBase
             {
+                HandlerGet = () => new StubIHttpHandler(),
                 RequestGet = () => httpRequestFake,
                 ItemsGet = () => new ListDictionary()
             };
 
             // Act
-            var traceProvider = TraceProvider.GetInstance(httpContextFake);
+            new TraceProvider(httpContextFake);
         }
 
         [TestMethod]
@@ -199,7 +203,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                 ItemsGet = () => new ListDictionary()
             };
 
-            var traceProvider = TraceProvider.GetInstance(httpContextFake);
+            var traceProvider = new TraceProvider(httpContextFake);
 
             // Act
             var nextTraceProvider = traceProvider.GetNext();

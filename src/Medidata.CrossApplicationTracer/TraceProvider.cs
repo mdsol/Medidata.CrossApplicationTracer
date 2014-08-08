@@ -33,14 +33,24 @@ namespace Medidata.CrossApplicationTracer
         /// Initializes a new instance of the TraceProvider class.
         /// </summary>
         /// <param name="httpContext">the httpContext</param>
-        private TraceProvider(HttpContextBase httpContext = null)
+        public TraceProvider(HttpContextBase httpContext = null)
         {
             string headerTraceId = null;
             string headerSpanId = null;
             string headerParentSpanId = null;
 
-            if (httpContext != null && httpContext.Handler != null)
+            if (IsValidRequest(httpContext))
             {
+                if (httpContext.Items.Contains(KEY))
+                {
+                    // set properties from context's item.
+                    var provider = httpContext.Items[KEY] as ITraceProvider;
+                    TraceId = provider.TraceId;
+                    SpanId = provider.SpanId;
+                    ParentSpanId = provider.ParentSpanId;
+                    return;
+                }
+
                 // zipkin use the following X-Headers to propagate the trace information
                 headerTraceId = httpContext.Request.Headers["X-B3-TraceId"];
                 headerSpanId = httpContext.Request.Headers["X-B3-SpanId"];
@@ -55,28 +65,11 @@ namespace Medidata.CrossApplicationTracer
             {
                 throw new ArgumentException("x-b3-SpanId and x-b3-ParentSpanId must not be the same value.");
             }
-        }
 
-        /// <summary>
-        /// GetInstance
-        /// </summary>
-        /// <param name="httpContext">The httpContext</param>
-        /// <returns>Return a provider from HttpContext if httpContext has TraceProvier. Return a new instance if httContext is null or httContext doens't have TraceProvider.</returns>
-        public static ITraceProvider GetInstance(HttpContextBase httpContext = null)
-        {
-            if (httpContext != null && httpContext.Items.Contains(KEY))
+            if (IsValidRequest(httpContext))
             {
-                return httpContext.Items[KEY] as ITraceProvider;
+                httpContext.Items[KEY] = this;
             }
-
-            var traceProvider = new TraceProvider(httpContext);
-
-            if (httpContext != null)
-            {
-                httpContext.Items.Add(KEY, traceProvider);
-            }
-
-            return traceProvider;
         }
 
         /// <summary>
@@ -91,6 +84,15 @@ namespace Medidata.CrossApplicationTracer
                 SpanId = GenerateHexEncodedInt64FromNewGuid(),
                 ParentSpanId = this.SpanId,
             };
+        }
+
+        /// <summary>
+        /// Is valid request
+        /// </summary>
+        /// <returns>true: valid request.</returns>
+        private static bool IsValidRequest(HttpContextBase httpContext)
+        {
+            return httpContext != null && httpContext.Handler != null;
         }
 
         /// <summary>
