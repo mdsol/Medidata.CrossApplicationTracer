@@ -92,7 +92,7 @@ namespace Medidata.CrossApplicationTracer
         /// <returns>true: valid request.</returns>
         private static bool IsValidRequest(HttpContextBase httpContext)
         {
-            return httpContext != null && httpContext.Handler != null;
+            return httpContext != null && httpContext.Items != null && httpContext.Request != null;
         }
 
         /// <summary>
