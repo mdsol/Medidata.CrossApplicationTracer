@@ -20,10 +20,49 @@ namespace Medidata.CrossApplicationTracer.Tests
             Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
+            Assert.AreEqual(string.Empty, traceProvider.IsSampled);
         }
 
         [TestMethod]
         public void ConstructorWithHttpContextHavingAllIdValues()
+        {
+            // Arrange
+            var fixture = new Fixture();
+            var traceId = Convert.ToString(fixture.Create<long>(), 16);
+            var spanId = Convert.ToString(fixture.Create<long>(), 16);
+            var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
+            var isSampled = Convert.ToString(fixture.Create<bool>().ToString());
+
+            var httpRequestFake = new StubHttpRequestBase
+            {
+                HeadersGet = () => new NameValueCollection
+                {
+                    { "X-B3-TraceId", traceId },
+                    { "X-B3-SpanId", spanId },
+                    { "X-B3-ParentSpanId", parentSpanId },
+                    { "X-B3-Sampled", isSampled },
+                }
+            };
+
+            var httpContextFake = new StubHttpContextBase
+            {
+                HandlerGet = () => new StubIHttpHandler(),
+                RequestGet = () => httpRequestFake,
+                ItemsGet = () => new ListDictionary()
+            };
+
+            // Act
+            var traceProvider = new TraceProvider(httpContextFake);
+
+            // Assert
+            Assert.AreEqual(traceId, traceProvider.TraceId);
+            Assert.AreEqual(spanId, traceProvider.SpanId);
+            Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
+            Assert.AreEqual(isSampled, traceProvider.IsSampled);
+        }
+
+        [TestMethod]
+        public void ConstructorWithHttpContextHavingIdValuesExceptIsSampled()
         {
             // Arrange
             var fixture = new Fixture();
@@ -55,8 +94,8 @@ namespace Medidata.CrossApplicationTracer.Tests
             Assert.AreEqual(traceId, traceProvider.TraceId);
             Assert.AreEqual(spanId, traceProvider.SpanId);
             Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
+            Assert.AreEqual(string.Empty, traceProvider.IsSampled);
         }
-
         [TestMethod]
         public void ConstructorWithHttpContextHavingInvalidIdValues()
         {
@@ -65,6 +104,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = fixture.Create<string>();
             var spanId = fixture.Create<string>();
             var parentSpanId = fixture.Create<string>();
+            var isSampled = fixture.Create<string>();
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -73,6 +113,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
+                    { "X-B3-Sampled", isSampled },
                 },
             };
 
@@ -90,6 +131,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
+            Assert.AreEqual(string.Empty, traceProvider.IsSampled);
         }
 
         [TestMethod]
@@ -101,6 +143,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = Convert.ToString(fixture.Create<long>(), 16);
             var spanId = Convert.ToString(fixture.Create<long>(), 16);
             var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
+            var isSampled = Convert.ToString(fixture.Create<bool>().ToString());
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -109,6 +152,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
+                    { "X-B3-Sampled", isSampled },
                 }
             };
 
@@ -145,6 +189,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Assert.AreEqual(traceProvider2.TraceId, traceProvider1.TraceId);
             Assert.AreEqual(traceProvider2.SpanId, traceProvider1.SpanId);
             Assert.AreEqual(traceProvider2.ParentSpanId, traceProvider1.ParentSpanId);
+            Assert.AreEqual(traceProvider2.IsSampled, traceProvider1.IsSampled);
         }
 
         [TestMethod]
@@ -186,6 +231,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = fixture.Create<long>().ToString();
             var spanId = fixture.Create<long>().ToString();
             var parentSpanId = fixture.Create<long>().ToString();
+            var isSampled = Convert.ToString(fixture.Create<bool>().ToString());
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -194,6 +240,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
+                    { "X-B3-Sampled", isSampled },
                 }
             };
 
@@ -212,6 +259,14 @@ namespace Medidata.CrossApplicationTracer.Tests
             Assert.AreEqual(traceProvider.TraceId, nextTraceProvider.TraceId);
             Convert.ToInt64(nextTraceProvider.SpanId, 16);
             Assert.AreEqual(traceProvider.SpanId, nextTraceProvider.ParentSpanId);
+            Assert.AreEqual(traceProvider.IsSampled, nextTraceProvider.IsSampled);
+        }
+
+        [TestMethod]
+        public void SetIsSampled()
+        {
+            
+
         }
     }
 }

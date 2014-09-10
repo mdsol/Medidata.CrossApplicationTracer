@@ -29,6 +29,12 @@ namespace Medidata.CrossApplicationTracer
         /// </summary>
         public string ParentSpanId { get; private set; }
 
+        public string IsSampled
+        {
+            get;
+            private set;
+        }
+
         /// <summary>
         /// Initializes a new instance of the TraceProvider class.
         /// </summary>
@@ -38,6 +44,7 @@ namespace Medidata.CrossApplicationTracer
             string headerTraceId = null;
             string headerSpanId = null;
             string headerParentSpanId = null;
+            string headerIsSampled = null;
 
             if (IsValidRequest(httpContext))
             {
@@ -48,6 +55,7 @@ namespace Medidata.CrossApplicationTracer
                     TraceId = provider.TraceId;
                     SpanId = provider.SpanId;
                     ParentSpanId = provider.ParentSpanId;
+                    IsSampled = provider.IsSampled;
                     return;
                 }
 
@@ -55,11 +63,13 @@ namespace Medidata.CrossApplicationTracer
                 headerTraceId = httpContext.Request.Headers["X-B3-TraceId"];
                 headerSpanId = httpContext.Request.Headers["X-B3-SpanId"];
                 headerParentSpanId = httpContext.Request.Headers["X-B3-ParentSpanId"];
+                headerIsSampled = httpContext.Request.Headers["X-B3-Sampled"];
             }
 
             TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
             SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
             ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
+            IsSampled = ParseIsSampled(headerIsSampled) ? headerIsSampled : string.Empty;
            
             if (SpanId == ParentSpanId)
             {
@@ -83,8 +93,12 @@ namespace Medidata.CrossApplicationTracer
                 TraceId = this.TraceId,
                 SpanId = GenerateHexEncodedInt64FromNewGuid(),
                 ParentSpanId = this.SpanId,
+                IsSampled = this.IsSampled
             };
         }
+
+
+
 
         /// <summary>
         /// Is valid request
@@ -106,6 +120,12 @@ namespace Medidata.CrossApplicationTracer
             return !string.IsNullOrWhiteSpace(value) && Int64.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
         }
 
+        private bool ParseIsSampled(string value)
+        {
+            bool result;
+            return !string.IsNullOrWhiteSpace(value) && Boolean.TryParse(value, out result);
+        }
+
         /// <summary>
         /// Generate a hex encoded Int64 from new Guid.
         /// </summary>
@@ -114,5 +134,7 @@ namespace Medidata.CrossApplicationTracer
         {
             return Convert.ToString(BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0), 16);
         }
+
+
     }
 }
