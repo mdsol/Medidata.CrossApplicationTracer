@@ -97,8 +97,10 @@ namespace Medidata.CrossApplicationTracer
             };
         }
 
-
-
+        public void SetIsSampled(bool isSampled)
+        {
+            IsSampled = isSampled.ToString();
+        }
 
         /// <summary>
         /// Is valid request
@@ -134,7 +136,5 @@ namespace Medidata.CrossApplicationTracer
         {
             return Convert.ToString(BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0), 16);
         }
-
-
     }
 }

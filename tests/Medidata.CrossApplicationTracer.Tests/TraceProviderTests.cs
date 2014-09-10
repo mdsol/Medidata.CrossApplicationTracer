@@ -31,7 +31,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = Convert.ToString(fixture.Create<long>(), 16);
             var spanId = Convert.ToString(fixture.Create<long>(), 16);
             var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
-            var isSampled = Convert.ToString(fixture.Create<bool>().ToString());
+            var isSampled = Convert.ToString(fixture.Create<bool>());
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -143,7 +143,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = Convert.ToString(fixture.Create<long>(), 16);
             var spanId = Convert.ToString(fixture.Create<long>(), 16);
             var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
-            var isSampled = Convert.ToString(fixture.Create<bool>().ToString());
+            var isSampled = Convert.ToString(fixture.Create<bool>());
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -231,7 +231,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = fixture.Create<long>().ToString();
             var spanId = fixture.Create<long>().ToString();
             var parentSpanId = fixture.Create<long>().ToString();
-            var isSampled = Convert.ToString(fixture.Create<bool>().ToString());
+            var isSampled = Convert.ToString(fixture.Create<bool>());
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -265,8 +265,37 @@ namespace Medidata.CrossApplicationTracer.Tests
         [TestMethod]
         public void SetIsSampled()
         {
-            
+            // Arrange
+            var fixture = new Fixture();
+            var traceId = Convert.ToString(fixture.Create<long>(), 16);
+            var spanId = Convert.ToString(fixture.Create<long>(), 16);
+            var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
 
+            var httpRequestFake = new StubHttpRequestBase
+            {
+                HeadersGet = () => new NameValueCollection
+                {
+                    { "X-B3-TraceId", traceId },
+                    { "X-B3-SpanId", spanId },
+                    { "X-B3-ParentSpanId", parentSpanId },
+                }
+            };
+
+            var httpContextFake = new StubHttpContextBase
+            {
+                HandlerGet = () => new StubIHttpHandler(),
+                RequestGet = () => httpRequestFake,
+                ItemsGet = () => new ListDictionary()
+            };
+
+            // Act
+            var traceProvider = new TraceProvider(httpContextFake);
+
+            var isSampled = fixture.Create<bool>();
+
+            traceProvider.SetIsSampled(isSampled);
+
+            Assert.AreEqual(isSampled.ToString(), traceProvider.IsSampled);
         }
     }
 }
