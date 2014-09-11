@@ -35,7 +35,7 @@ namespace Medidata.CrossApplicationTracer
         public bool? IsSampled
         {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
@@ -98,14 +98,6 @@ namespace Medidata.CrossApplicationTracer
                 ParentSpanId = this.SpanId,
                 IsSampled = this.IsSampled
             };
-        }
-
-        /// <summary>
-        /// Sets Sampled as isSampled
-        /// </summary>
-        public void SetSampled(bool isSampled)
-        {
-            IsSampled = isSampled;
         }
 
         /// <summary>

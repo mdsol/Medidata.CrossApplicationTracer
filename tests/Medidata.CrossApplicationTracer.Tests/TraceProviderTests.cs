@@ -261,41 +261,5 @@ namespace Medidata.CrossApplicationTracer.Tests
             Assert.AreEqual(traceProvider.SpanId, nextTraceProvider.ParentSpanId);
             Assert.AreEqual(traceProvider.IsSampled, nextTraceProvider.IsSampled);
         }
-
-        [TestMethod]
-        public void SetIsSampled()
-        {
-            // Arrange
-            var fixture = new Fixture();
-            var traceId = Convert.ToString(fixture.Create<long>(), 16);
-            var spanId = Convert.ToString(fixture.Create<long>(), 16);
-            var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
-
-            var httpRequestFake = new StubHttpRequestBase
-            {
-                HeadersGet = () => new NameValueCollection
-                {
-                    { "X-B3-TraceId", traceId },
-                    { "X-B3-SpanId", spanId },
-                    { "X-B3-ParentSpanId", parentSpanId },
-                }
-            };
-
-            var httpContextFake = new StubHttpContextBase
-            {
-                HandlerGet = () => new StubIHttpHandler(),
-                RequestGet = () => httpRequestFake,
-                ItemsGet = () => new ListDictionary()
-            };
-
-            // Act
-            var traceProvider = new TraceProvider(httpContextFake);
-
-            var isSampled = fixture.Create<bool>();
-
-            traceProvider.SetSampled(isSampled);
-
-            Assert.AreEqual(isSampled, traceProvider.IsSampled);
-        }
     }
 }
