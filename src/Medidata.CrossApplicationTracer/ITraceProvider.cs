@@ -21,6 +21,11 @@
         string ParentSpanId { get; }
 
         /// <summary>
+        /// Gets and Sets IsSampled
+        /// </summary>
+        bool? IsSampled { get; set; }
+
+        /// <summary>
         /// Gets a Trace for outgoing HTTP request.
         /// </summary>
         /// <returns>The trace</returns>
