@@ -29,7 +29,10 @@ namespace Medidata.CrossApplicationTracer
         /// </summary>
         public string ParentSpanId { get; private set; }
 
-        public string IsSampled
+        /// <summary>
+        /// Gets Sampled
+        /// </summary>
+        public string Sampled
         {
             get;
             private set;
@@ -55,7 +58,7 @@ namespace Medidata.CrossApplicationTracer
                     TraceId = provider.TraceId;
                     SpanId = provider.SpanId;
                     ParentSpanId = provider.ParentSpanId;
-                    IsSampled = provider.IsSampled;
+                    Sampled = provider.Sampled;
                     return;
                 }
 
@@ -69,7 +72,7 @@ namespace Medidata.CrossApplicationTracer
             TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
             SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
             ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
-            IsSampled = ParseIsSampled(headerIsSampled) ? headerIsSampled : string.Empty;
+            Sampled = ParseIsSampled(headerIsSampled) ? headerIsSampled : string.Empty;
            
             if (SpanId == ParentSpanId)
             {
@@ -93,13 +96,16 @@ namespace Medidata.CrossApplicationTracer
                 TraceId = this.TraceId,
                 SpanId = GenerateHexEncodedInt64FromNewGuid(),
                 ParentSpanId = this.SpanId,
-                IsSampled = this.IsSampled
+                Sampled = this.Sampled
             };
         }
 
-        public void SetIsSampled(bool isSampled)
+        /// <summary>
+        /// Sets Sampled as isSampled
+        /// </summary>
+        public void SetSampled(bool isSampled)
         {
-            IsSampled = isSampled.ToString();
+            Sampled = isSampled.ToString();
         }
 
         /// <summary>

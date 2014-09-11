@@ -23,7 +23,7 @@
         /// <summary>
         /// Gets IsSampled
         /// </summary>
-        string IsSampled { get; }
+        string Sampled { get; }
 
         /// <summary>
         /// Gets a Trace for outgoing HTTP request.
