@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="TraceProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ZipkinSamplerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Medidata.CrossApplicationTracer\Medidata.CrossApplicationTracer.csproj">

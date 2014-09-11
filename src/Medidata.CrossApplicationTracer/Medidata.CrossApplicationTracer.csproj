@@ -45,6 +45,7 @@
     <Compile Include="TraceProvider.cs" />
     <Compile Include="ITraceProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ZipkinSampler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Medidata.CrossApplicationTracer.nuspec" />
