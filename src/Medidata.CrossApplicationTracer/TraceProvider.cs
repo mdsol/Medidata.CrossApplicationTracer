@@ -47,7 +47,7 @@ namespace Medidata.CrossApplicationTracer
             string headerTraceId = null;
             string headerSpanId = null;
             string headerParentSpanId = null;
-            string headerIsSampled = null;
+            string headerSampled = null;
 
             if (IsValidRequest(httpContext))
             {
@@ -66,13 +66,13 @@ namespace Medidata.CrossApplicationTracer
                 headerTraceId = httpContext.Request.Headers["X-B3-TraceId"];
                 headerSpanId = httpContext.Request.Headers["X-B3-SpanId"];
                 headerParentSpanId = httpContext.Request.Headers["X-B3-ParentSpanId"];
-                headerIsSampled = httpContext.Request.Headers["X-B3-Sampled"];
+                headerSampled = httpContext.Request.Headers["X-B3-Sampled"];
             }
 
             TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
             SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
             ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
-            Sampled = ParseIsSampled(headerIsSampled) ? headerIsSampled : string.Empty;
+            Sampled = ParseSampled(headerSampled) ? headerSampled : string.Empty;
            
             if (SpanId == ParentSpanId)
             {
@@ -128,7 +128,7 @@ namespace Medidata.CrossApplicationTracer
             return !string.IsNullOrWhiteSpace(value) && Int64.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
         }
 
-        private bool ParseIsSampled(string value)
+        private bool ParseSampled(string value)
         {
             bool result;
             return !string.IsNullOrWhiteSpace(value) && Boolean.TryParse(value, out result);

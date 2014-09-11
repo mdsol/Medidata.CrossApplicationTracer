@@ -21,7 +21,7 @@
         string ParentSpanId { get; }
 
         /// <summary>
-        /// Gets IsSampled
+        /// Gets Sampled
         /// </summary>
         string Sampled { get; }
 

@@ -31,7 +31,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = Convert.ToString(fixture.Create<long>(), 16);
             var spanId = Convert.ToString(fixture.Create<long>(), 16);
             var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
-            var isSampled = Convert.ToString(fixture.Create<bool>());
+            var sampled = Convert.ToString(fixture.Create<bool>());
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -40,7 +40,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
-                    { "X-B3-Sampled", isSampled },
+                    { "X-B3-Sampled", sampled },
                 }
             };
 
@@ -58,7 +58,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Assert.AreEqual(traceId, traceProvider.TraceId);
             Assert.AreEqual(spanId, traceProvider.SpanId);
             Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
-            Assert.AreEqual(isSampled, traceProvider.Sampled);
+            Assert.AreEqual(sampled, traceProvider.Sampled);
         }
 
         [TestMethod]
@@ -104,7 +104,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = fixture.Create<string>();
             var spanId = fixture.Create<string>();
             var parentSpanId = fixture.Create<string>();
-            var isSampled = fixture.Create<string>();
+            var sampled = fixture.Create<string>();
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -113,7 +113,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
-                    { "X-B3-Sampled", isSampled },
+                    { "X-B3-Sampled", sampled },
                 },
             };
 
@@ -143,7 +143,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = Convert.ToString(fixture.Create<long>(), 16);
             var spanId = Convert.ToString(fixture.Create<long>(), 16);
             var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
-            var isSampled = Convert.ToString(fixture.Create<bool>());
+            var sampled = Convert.ToString(fixture.Create<bool>());
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -152,7 +152,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
-                    { "X-B3-Sampled", isSampled },
+                    { "X-B3-Sampled", sampled },
                 }
             };
 
@@ -231,7 +231,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = fixture.Create<long>().ToString();
             var spanId = fixture.Create<long>().ToString();
             var parentSpanId = fixture.Create<long>().ToString();
-            var isSampled = Convert.ToString(fixture.Create<bool>());
+            var sampled = Convert.ToString(fixture.Create<bool>());
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -240,7 +240,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
-                    { "X-B3-Sampled", isSampled },
+                    { "X-B3-Sampled", sampled },
                 }
             };
 
