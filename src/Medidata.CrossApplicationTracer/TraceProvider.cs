@@ -30,9 +30,9 @@ namespace Medidata.CrossApplicationTracer
         public string ParentSpanId { get; private set; }
 
         /// <summary>
-        /// Gets Sampled
+        /// Gets IsSampled
         /// </summary>
-        public string Sampled
+        public bool? IsSampled
         {
             get;
             private set;
@@ -58,7 +58,7 @@ namespace Medidata.CrossApplicationTracer
                     TraceId = provider.TraceId;
                     SpanId = provider.SpanId;
                     ParentSpanId = provider.ParentSpanId;
-                    Sampled = provider.Sampled;
+                    IsSampled = provider.IsSampled;
                     return;
                 }
 
@@ -72,7 +72,7 @@ namespace Medidata.CrossApplicationTracer
             TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
             SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
             ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
-            Sampled = ParseSampled(headerSampled) ? headerSampled : string.Empty;
+            IsSampled = ParseHeaderIsSampled(headerSampled);
            
             if (SpanId == ParentSpanId)
             {
@@ -96,7 +96,7 @@ namespace Medidata.CrossApplicationTracer
                 TraceId = this.TraceId,
                 SpanId = GenerateHexEncodedInt64FromNewGuid(),
                 ParentSpanId = this.SpanId,
-                Sampled = this.Sampled
+                IsSampled = this.IsSampled
             };
         }
 
@@ -105,7 +105,7 @@ namespace Medidata.CrossApplicationTracer
         /// </summary>
         public void SetSampled(bool isSampled)
         {
-            Sampled = isSampled.ToString();
+            IsSampled = isSampled;
         }
 
         /// <summary>
@@ -128,10 +128,14 @@ namespace Medidata.CrossApplicationTracer
             return !string.IsNullOrWhiteSpace(value) && Int64.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
         }
 
-        private bool ParseSampled(string value)
+        private bool? ParseHeaderIsSampled(string value)
         {
             bool result;
-            return !string.IsNullOrWhiteSpace(value) && Boolean.TryParse(value, out result);
+            if (!string.IsNullOrWhiteSpace(value) && Boolean.TryParse(value, out result))
+            {
+                return result;
+            }
+            return null;
         }
 
         /// <summary>

@@ -20,7 +20,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
-            Assert.AreEqual(string.Empty, traceProvider.Sampled);
+            Assert.AreEqual(null, traceProvider.IsSampled);
         }
 
         [TestMethod]
@@ -31,7 +31,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var traceId = Convert.ToString(fixture.Create<long>(), 16);
             var spanId = Convert.ToString(fixture.Create<long>(), 16);
             var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
-            var sampled = Convert.ToString(fixture.Create<bool>());
+            var isSampled = fixture.Create<bool>();
 
             var httpRequestFake = new StubHttpRequestBase
             {
@@ -40,7 +40,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
-                    { "X-B3-Sampled", sampled },
+                    { "X-B3-Sampled", isSampled.ToString() },
                 }
             };
 
@@ -58,7 +58,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Assert.AreEqual(traceId, traceProvider.TraceId);
             Assert.AreEqual(spanId, traceProvider.SpanId);
             Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
-            Assert.AreEqual(sampled, traceProvider.Sampled);
+            Assert.AreEqual(isSampled, traceProvider.IsSampled);
         }
 
         [TestMethod]
@@ -94,7 +94,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Assert.AreEqual(traceId, traceProvider.TraceId);
             Assert.AreEqual(spanId, traceProvider.SpanId);
             Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
-            Assert.AreEqual(string.Empty, traceProvider.Sampled);
+            Assert.AreEqual(null, traceProvider.IsSampled);
         }
         [TestMethod]
         public void ConstructorWithHttpContextHavingInvalidIdValues()
@@ -131,7 +131,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
-            Assert.AreEqual(string.Empty, traceProvider.Sampled);
+            Assert.AreEqual(null, traceProvider.IsSampled);
         }
 
         [TestMethod]
@@ -189,7 +189,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Assert.AreEqual(traceProvider2.TraceId, traceProvider1.TraceId);
             Assert.AreEqual(traceProvider2.SpanId, traceProvider1.SpanId);
             Assert.AreEqual(traceProvider2.ParentSpanId, traceProvider1.ParentSpanId);
-            Assert.AreEqual(traceProvider2.Sampled, traceProvider1.Sampled);
+            Assert.AreEqual(traceProvider2.IsSampled, traceProvider1.IsSampled);
         }
 
         [TestMethod]
@@ -259,7 +259,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Assert.AreEqual(traceProvider.TraceId, nextTraceProvider.TraceId);
             Convert.ToInt64(nextTraceProvider.SpanId, 16);
             Assert.AreEqual(traceProvider.SpanId, nextTraceProvider.ParentSpanId);
-            Assert.AreEqual(traceProvider.Sampled, nextTraceProvider.Sampled);
+            Assert.AreEqual(traceProvider.IsSampled, nextTraceProvider.IsSampled);
         }
 
         [TestMethod]
@@ -295,7 +295,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             traceProvider.SetSampled(isSampled);
 
-            Assert.AreEqual(isSampled.ToString(), traceProvider.Sampled);
+            Assert.AreEqual(isSampled, traceProvider.IsSampled);
         }
     }
 }
