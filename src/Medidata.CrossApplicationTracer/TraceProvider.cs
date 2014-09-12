@@ -32,18 +32,23 @@ namespace Medidata.CrossApplicationTracer
         /// <summary>
         /// Gets IsSampled
         /// </summary>
-        public bool? IsSampled
+        public bool IsSampled
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
         /// Initializes a new instance of the TraceProvider class.
         /// </summary>
         /// <param name="httpContext">the httpContext</param>
-        public TraceProvider(HttpContextBase httpContext = null)
+        public TraceProvider(HttpContextBase httpContext = null, string dontSampleListCsv = null, string sampleRate = null, ZipkinSampler zipkinSampler = null)
         {
+            if ( zipkinSampler == null)
+            {
+                zipkinSampler = new ZipkinSampler(dontSampleListCsv, sampleRate);
+            }
+
             string headerTraceId = null;
             string headerSpanId = null;
             string headerParentSpanId = null;
@@ -72,7 +77,7 @@ namespace Medidata.CrossApplicationTracer
             TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
             SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
             ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
-            IsSampled = ParseHeaderIsSampled(headerSampled);
+            IsSampled = ParseHeaderIsSampled(headerSampled) ?? DetermineSampling(httpContext, zipkinSampler);
            
             if (SpanId == ParentSpanId)
             {
@@ -83,6 +88,15 @@ namespace Medidata.CrossApplicationTracer
             {
                 httpContext.Items[KEY] = this;
             }
+        }
+
+        private static bool DetermineSampling(HttpContextBase httpContext, ZipkinSampler zipkinSampler)
+        {
+            if ( httpContext == null )
+            {
+                return false;
+            }
+            return zipkinSampler.ShouldBeSampled(httpContext.Request.Path);
         }
 
         /// <summary>

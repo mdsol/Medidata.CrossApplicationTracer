@@ -11,12 +11,25 @@ namespace Medidata.CrossApplicationTracer
         private static Random random = new Random();
  
         private readonly List<string> dontSampleList;
-        private readonly float sampleRate;
+        internal readonly float sampleRate;
       
-        public ZipkinSampler(List<string> dontSampleList, float sampleRate)
+        public ZipkinSampler(string dontSampleListCsv, string configSampleRate)
         {
+            var dontSampleList = new List<string>();
+            if (!String.IsNullOrWhiteSpace(dontSampleListCsv))
+            {
+                dontSampleList.AddRange(dontSampleListCsv.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(w => w.Trim().ToLowerInvariant()));
+            }
+
+            float zipkinSampleRate;
+            float.TryParse(configSampleRate, out zipkinSampleRate);
+            if ( zipkinSampleRate < 0 || zipkinSampleRate > 1)
+            {
+                throw new ArgumentException("zipkinConfig zipkinSampleRate is not between 0 and 1");
+            }
+
             this.dontSampleList = dontSampleList;
-            this.sampleRate = sampleRate;
+            this.sampleRate = zipkinSampleRate;
         }
 
         internal bool IsInDontSampleList(string path)
@@ -31,7 +44,7 @@ namespace Medidata.CrossApplicationTracer
             return false;
         }
 
-        internal bool ShouldBeSampled(string path)
+        public virtual bool ShouldBeSampled(string path)
         {
             if ( ! IsInDontSampleList(path))
             {

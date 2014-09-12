@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Web.Fakes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ploeh.AutoFixture;
+using Rhino.Mocks;
 
 namespace Medidata.CrossApplicationTracer.Tests
 {
@@ -20,7 +21,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
-            Assert.AreEqual(null, traceProvider.IsSampled);
+            Assert.AreEqual(false, traceProvider.IsSampled);
         }
 
         [TestMethod]
@@ -70,6 +71,8 @@ namespace Medidata.CrossApplicationTracer.Tests
             var spanId = Convert.ToString(fixture.Create<long>(), 16);
             var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
 
+            var mockPath = "mockPath/sajfklsajflk";
+
             var httpRequestFake = new StubHttpRequestBase
             {
                 HeadersGet = () => new NameValueCollection
@@ -77,7 +80,8 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
-                }
+                },
+                PathGet = () => mockPath
             };
 
             var httpContextFake = new StubHttpContextBase
@@ -87,15 +91,20 @@ namespace Medidata.CrossApplicationTracer.Tests
                 ItemsGet = () => new ListDictionary()
             };
 
+            var expectedIsSampled = fixture.Create<bool>();
+            var sampleFilter = MockRepository.GenerateStub<ZipkinSampler>(fixture.Create<string>(), fixture.Create<string>());
+            sampleFilter.Expect(x => x.ShouldBeSampled(mockPath)).Return(expectedIsSampled);
+
             // Act
-            var traceProvider = new TraceProvider(httpContextFake);
+            var traceProvider = new TraceProvider(httpContextFake, zipkinSampler:sampleFilter);
 
             // Assert
             Assert.AreEqual(traceId, traceProvider.TraceId);
             Assert.AreEqual(spanId, traceProvider.SpanId);
             Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
-            Assert.AreEqual(null, traceProvider.IsSampled);
+            Assert.AreEqual(expectedIsSampled, traceProvider.IsSampled);
         }
+
         [TestMethod]
         public void ConstructorWithHttpContextHavingInvalidIdValues()
         {
@@ -106,6 +115,8 @@ namespace Medidata.CrossApplicationTracer.Tests
             var parentSpanId = fixture.Create<string>();
             var sampled = fixture.Create<string>();
 
+            var mockPath = "mockPath/sajfklsajflk";
+
             var httpRequestFake = new StubHttpRequestBase
             {
                 HeadersGet = () => new NameValueCollection
@@ -115,6 +126,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-ParentSpanId", parentSpanId },
                     { "X-B3-Sampled", sampled },
                 },
+                PathGet = () => mockPath
             };
 
             var httpContextFake = new StubHttpContextBase
@@ -123,15 +135,19 @@ namespace Medidata.CrossApplicationTracer.Tests
                 ItemsGet = () => new ListDictionary()
             };
 
+            var expectedIsSampled = fixture.Create<bool>();
+            var sampleFilter = MockRepository.GenerateStub<ZipkinSampler>(fixture.Create<string>(), fixture.Create<string>());
+            sampleFilter.Expect(x => x.ShouldBeSampled(mockPath)).Return(expectedIsSampled);
+
             // Act
-            var traceProvider = new TraceProvider(httpContextFake);
+            var traceProvider = new TraceProvider(httpContextFake, zipkinSampler:sampleFilter);
 
             // Assert
             Assert.AreNotEqual(traceId, traceProvider.TraceId);
             Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
-            Assert.AreEqual(null, traceProvider.IsSampled);
+            Assert.AreEqual(expectedIsSampled, traceProvider.IsSampled);
         }
 
         [TestMethod]

@@ -21,9 +21,9 @@
         string ParentSpanId { get; }
 
         /// <summary>
-        /// Gets and Sets IsSampled
+        /// Gets IsSampled
         /// </summary>
-        bool? IsSampled { get; set; }
+        bool IsSampled { get; }
 
         /// <summary>
         /// Gets a Trace for outgoing HTTP request.
