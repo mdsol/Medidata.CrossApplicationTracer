@@ -77,7 +77,7 @@ namespace Medidata.CrossApplicationTracer
             TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
             SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
             ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
-            IsSampled = ParseHeaderIsSampled(headerSampled) ?? DetermineSampling(httpContext, zipkinSampler);
+            IsSampled = DetermineSampling(httpContext, zipkinSampler, headerSampled);
            
             if (SpanId == ParentSpanId)
             {
@@ -88,15 +88,6 @@ namespace Medidata.CrossApplicationTracer
             {
                 httpContext.Items[KEY] = this;
             }
-        }
-
-        private static bool DetermineSampling(HttpContextBase httpContext, ZipkinSampler zipkinSampler)
-        {
-            if ( httpContext == null )
-            {
-                return false;
-            }
-            return zipkinSampler.ShouldBeSampled(httpContext.Request.Path);
         }
 
         /// <summary>
@@ -134,16 +125,6 @@ namespace Medidata.CrossApplicationTracer
             return !string.IsNullOrWhiteSpace(value) && Int64.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
         }
 
-        private bool? ParseHeaderIsSampled(string value)
-        {
-            bool result;
-            if (!string.IsNullOrWhiteSpace(value) && Boolean.TryParse(value, out result))
-            {
-                return result;
-            }
-            return null;
-        }
-
         /// <summary>
         /// Generate a hex encoded Int64 from new Guid.
         /// </summary>
@@ -151,6 +132,20 @@ namespace Medidata.CrossApplicationTracer
         private string GenerateHexEncodedInt64FromNewGuid()
         {
             return Convert.ToString(BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0), 16);
+        }
+
+        private bool DetermineSampling(HttpContextBase httpContext, ZipkinSampler zipkinSampler, string sampled)
+        {
+            if ( httpContext == null )
+            {
+                return false;
+            }
+            bool result;
+            if (!string.IsNullOrWhiteSpace(sampled) && Boolean.TryParse(sampled, out result))
+            {
+                return result;
+            }
+            return zipkinSampler.ShouldBeSampled(httpContext.Request.Path);
         }
     }
 }
