@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Web.Fakes;
+using System.Collections.Specialized;
 
 namespace Medidata.CrossApplicationTracer.Tests
 {
@@ -72,30 +74,84 @@ namespace Medidata.CrossApplicationTracer.Tests
         }
 
         [TestMethod]
-        public void ShouldBeSampled_InNonSampleList()
+        public void ShouldBeSampled_sampledTrue()
         {
-            var path = "foo/anything";
             var zipkinFilter = new ZipkinSampler(dontSampleList, sampleRate);
 
-            Assert.IsFalse(zipkinFilter.ShouldBeSampled(path));
+            Assert.IsTrue(zipkinFilter.ShouldBeSampled(new StubHttpContextBase(), "true"));
+        }
+
+        [TestMethod]
+        public void ShouldBeSampled_sampledFalse()
+        {
+            var zipkinFilter = new ZipkinSampler(dontSampleList, sampleRate);
+
+            Assert.IsFalse(zipkinFilter.ShouldBeSampled(new StubHttpContextBase(), "false"));
+        }
+
+        [TestMethod]
+        public void ShouldBeSampled_InNonSampleList()
+        {
+            var mockPath = "foo/sajfklsajflk";
+
+            var httpRequestFake = new StubHttpRequestBase
+            {
+                PathGet = () => mockPath
+            };
+
+            var httpContextFake = new StubHttpContextBase
+            {
+                HandlerGet = () => new StubIHttpHandler(),
+                RequestGet = () => httpRequestFake,
+                ItemsGet = () => new ListDictionary()
+            };
+
+            var zipkinFilter = new ZipkinSampler(dontSampleList, sampleRate);
+
+            Assert.IsFalse(zipkinFilter.ShouldBeSampled(httpContextFake, null));
         }
 
         [TestMethod]
         public void ShouldBeSampled_With100PercentSampleRate()
         {
             var path = "notfoo/anything";
+
+            var httpRequestFake = new StubHttpRequestBase
+            {
+                PathGet = () => path
+            };
+
+            var httpContextFake = new StubHttpContextBase
+            {
+                HandlerGet = () => new StubIHttpHandler(),
+                RequestGet = () => httpRequestFake,
+                ItemsGet = () => new ListDictionary()
+            };
+
             var zipkinFilter = new ZipkinSampler(dontSampleList, "1.0");
 
-            Assert.IsTrue(zipkinFilter.ShouldBeSampled(path));
+            Assert.IsTrue(zipkinFilter.ShouldBeSampled(httpContextFake, null));
         }
 
         [TestMethod]
         public void ShouldBeSampled_With0PercentSampleRate()
         {
             var path = "notfoo/anything";
+            var httpRequestFake = new StubHttpRequestBase
+            {
+                PathGet = () => path
+            };
+
+            var httpContextFake = new StubHttpContextBase
+            {
+                HandlerGet = () => new StubIHttpHandler(),
+                RequestGet = () => httpRequestFake,
+                ItemsGet = () => new ListDictionary()
+            };
+
             var zipkinFilter = new ZipkinSampler(dontSampleList, "0.0");
 
-            Assert.IsFalse(zipkinFilter.ShouldBeSampled(path));
+            Assert.IsFalse(zipkinFilter.ShouldBeSampled(httpContextFake, null));
         }
     }
 }

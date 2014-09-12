@@ -83,7 +83,7 @@ namespace Medidata.CrossApplicationTracer
             TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
             SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
             ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
-            IsSampled = DetermineSampling(httpContext, zipkinSampler, headerSampled);
+            IsSampled = zipkinSampler.ShouldBeSampled(httpContext, headerSampled);
            
             if (SpanId == ParentSpanId)
             {
@@ -138,20 +138,6 @@ namespace Medidata.CrossApplicationTracer
         private string GenerateHexEncodedInt64FromNewGuid()
         {
             return Convert.ToString(BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0), 16);
-        }
-
-        private bool DetermineSampling(HttpContextBase httpContext, ZipkinSampler zipkinSampler, string sampled)
-        {
-            if ( httpContext == null )
-            {
-                return false;
-            }
-            bool result;
-            if (!string.IsNullOrWhiteSpace(sampled) && Boolean.TryParse(sampled, out result))
-            {
-                return result;
-            }
-            return zipkinSampler.ShouldBeSampled(httpContext.Request.Path);
         }
     }
 }

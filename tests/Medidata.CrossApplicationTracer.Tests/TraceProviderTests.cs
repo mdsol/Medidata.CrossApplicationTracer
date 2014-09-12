@@ -93,7 +93,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             var expectedIsSampled = fixture.Create<bool>();
             var sampleFilter = MockRepository.GenerateStub<ZipkinSampler>(fixture.Create<string>(), fixture.Create<string>());
-            sampleFilter.Expect(x => x.ShouldBeSampled(mockPath)).Return(expectedIsSampled);
+            sampleFilter.Expect(x => x.ShouldBeSampled(httpContextFake, null)).Return(expectedIsSampled);
 
             // Act
             var traceProvider = new TraceProvider(sampleFilter, httpContextFake);
@@ -137,7 +137,7 @@ namespace Medidata.CrossApplicationTracer.Tests
 
             var expectedIsSampled = fixture.Create<bool>();
             var sampleFilter = MockRepository.GenerateStub<ZipkinSampler>(fixture.Create<string>(), fixture.Create<string>());
-            sampleFilter.Expect(x => x.ShouldBeSampled(mockPath)).Return(expectedIsSampled);
+            sampleFilter.Expect(x => x.ShouldBeSampled(httpContextFake, sampled)).Return(expectedIsSampled);
 
             // Act
             var traceProvider = new TraceProvider(sampleFilter, httpContextFake);

@@ -44,9 +44,20 @@ namespace Medidata.CrossApplicationTracer
             return false;
         }
 
-        public virtual bool ShouldBeSampled(string path)
+        public virtual bool ShouldBeSampled(System.Web.HttpContextBase httpContext, string sampled)
         {
-            if ( ! IsInDontSampleList(path))
+            if ( httpContext == null )
+            {
+                return false;
+            }
+
+            bool result;
+            if (!string.IsNullOrWhiteSpace(sampled) && Boolean.TryParse(sampled, out result))
+            {
+                return result;
+            }
+
+            if ( ! IsInDontSampleList(httpContext.Request.Path))
             {
                 if ( random.NextDouble() <= sampleRate )
                 {
