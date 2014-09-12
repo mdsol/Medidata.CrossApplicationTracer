@@ -18,6 +18,15 @@ namespace Medidata.CrossApplicationTracer.Tests
         }
 
         [TestMethod]
+        public void CTOR_WithNullSampleRateAndDontSampleList()
+        {
+            var zipkinSampler = new ZipkinSampler(null, null);
+
+            Assert.AreEqual(0.0f, zipkinSampler.sampleRate);
+            Assert.AreEqual(0, zipkinSampler.dontSampleList.Count);
+        }
+
+        [TestMethod]
         public void CTOR_WithNonFloatZipkinSampleRate()
         {
             var sampleRate = "asfsaf";
@@ -25,6 +34,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             var zipkinSampler = new ZipkinSampler(string.Empty, sampleRate);
 
             Assert.AreEqual(0.0f, zipkinSampler.sampleRate);
+            Assert.AreEqual(0, zipkinSampler.dontSampleList.Count);
         }
 
         [TestMethod]

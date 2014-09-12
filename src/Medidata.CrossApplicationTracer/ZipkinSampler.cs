@@ -10,7 +10,7 @@ namespace Medidata.CrossApplicationTracer
     {
         private static Random random = new Random();
  
-        private readonly List<string> dontSampleList;
+        internal readonly List<string> dontSampleList;
         internal readonly float sampleRate;
       
         public ZipkinSampler(string dontSampleListCsv, string configSampleRate)
