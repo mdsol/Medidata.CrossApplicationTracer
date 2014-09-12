@@ -71,8 +71,6 @@ namespace Medidata.CrossApplicationTracer.Tests
             var spanId = Convert.ToString(fixture.Create<long>(), 16);
             var parentSpanId = Convert.ToString(fixture.Create<long>(), 16);
 
-            var mockPath = "mockPath/sajfklsajflk";
-
             var httpRequestFake = new StubHttpRequestBase
             {
                 HeadersGet = () => new NameValueCollection
@@ -80,8 +78,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-TraceId", traceId },
                     { "X-B3-SpanId", spanId },
                     { "X-B3-ParentSpanId", parentSpanId },
-                },
-                PathGet = () => mockPath
+                }
             };
 
             var httpContextFake = new StubHttpContextBase
@@ -115,8 +112,6 @@ namespace Medidata.CrossApplicationTracer.Tests
             var parentSpanId = fixture.Create<string>();
             var sampled = fixture.Create<string>();
 
-            var mockPath = "mockPath/sajfklsajflk";
-
             var httpRequestFake = new StubHttpRequestBase
             {
                 HeadersGet = () => new NameValueCollection
@@ -126,7 +121,6 @@ namespace Medidata.CrossApplicationTracer.Tests
                     { "X-B3-ParentSpanId", parentSpanId },
                     { "X-B3-Sampled", sampled },
                 },
-                PathGet = () => mockPath
             };
 
             var httpContextFake = new StubHttpContextBase
