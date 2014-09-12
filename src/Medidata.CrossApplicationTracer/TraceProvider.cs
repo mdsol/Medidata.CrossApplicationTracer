@@ -42,13 +42,19 @@ namespace Medidata.CrossApplicationTracer
         /// Initializes a new instance of the TraceProvider class.
         /// </summary>
         /// <param name="httpContext">the httpContext</param>
-        public TraceProvider(HttpContextBase httpContext = null, string dontSampleListCsv = null, string sampleRate = null, ZipkinSampler zipkinSampler = null)
-        {
-            if ( zipkinSampler == null)
-            {
-                zipkinSampler = new ZipkinSampler(dontSampleListCsv, sampleRate);
-            }
+        /// <param name="dontSampleListCsv">the dontSampleListCsv</param>
+        /// <param name="sampleRate">the sampleRate</param>
+        public TraceProvider(string dontSampleListCsv = null, string sampleRate = null, HttpContextBase httpContext = null) : this
+            (new ZipkinSampler(dontSampleListCsv, sampleRate), httpContext)
+        {}
 
+        /// <summary>
+        /// Initializes a new instance of the TraceProvider class.
+        /// </summary>
+        /// <param name="httpContext">the httpContext</param>
+        /// <param name="zipkinSampler">zipkinSampler instance</param>
+        internal TraceProvider(ZipkinSampler zipkinSampler, HttpContextBase httpContext = null)
+        {
             string headerTraceId = null;
             string headerSpanId = null;
             string headerParentSpanId = null;

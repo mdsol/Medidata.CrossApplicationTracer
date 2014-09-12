@@ -53,7 +53,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            var traceProvider = new TraceProvider(httpContextFake);
+            var traceProvider = new TraceProvider(httpContext:httpContextFake);
 
             // Assert
             Assert.AreEqual(traceId, traceProvider.TraceId);
@@ -96,7 +96,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             sampleFilter.Expect(x => x.ShouldBeSampled(mockPath)).Return(expectedIsSampled);
 
             // Act
-            var traceProvider = new TraceProvider(httpContextFake, zipkinSampler:sampleFilter);
+            var traceProvider = new TraceProvider(sampleFilter, httpContextFake);
 
             // Assert
             Assert.AreEqual(traceId, traceProvider.TraceId);
@@ -140,7 +140,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             sampleFilter.Expect(x => x.ShouldBeSampled(mockPath)).Return(expectedIsSampled);
 
             // Act
-            var traceProvider = new TraceProvider(httpContextFake, zipkinSampler:sampleFilter);
+            var traceProvider = new TraceProvider(sampleFilter, httpContextFake);
 
             // Assert
             Assert.AreNotEqual(traceId, traceProvider.TraceId);
@@ -184,7 +184,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                 }
             };
 
-            var traceProvider1 = new TraceProvider(httpContextFake1);
+            var traceProvider1 = new TraceProvider(httpContext: httpContextFake1);
 
             var httpContextFake2 = new StubHttpContextBase
             {
@@ -199,7 +199,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            var traceProvider2 = new TraceProvider(httpContextFake2);
+            var traceProvider2 = new TraceProvider(httpContext:httpContextFake2);
 
             // Assert
             Assert.AreEqual(traceProvider2.TraceId, traceProvider1.TraceId);
@@ -236,7 +236,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            new TraceProvider(httpContextFake);
+            new TraceProvider(httpContext: httpContextFake);
         }
 
         [TestMethod]
@@ -266,7 +266,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                 ItemsGet = () => new ListDictionary()
             };
 
-            var traceProvider = new TraceProvider(httpContextFake);
+            var traceProvider = new TraceProvider(httpContext: httpContextFake);
 
             // Act
             var nextTraceProvider = traceProvider.GetNext();
