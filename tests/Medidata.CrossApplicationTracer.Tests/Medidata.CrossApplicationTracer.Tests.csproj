@@ -41,8 +41,15 @@
     <Reference Include="mscorlib.4.0.0.0.Fakes">
       <HintPath>FakesAssemblies\mscorlib.4.0.0.0.Fakes.dll</HintPath>
     </Reference>
-    <Reference Include="Ploeh.AutoFixture">
-      <HintPath>..\..\packages\AutoFixture.3.19.1\lib\net40\Ploeh.AutoFixture.dll</HintPath>
+    <Reference Include="Ploeh.AutoFixture, Version=3.20.1.0, Culture=neutral, PublicKeyToken=b24654c590009d4f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\AutoFixture.3.20.1\lib\net40\Ploeh.AutoFixture.dll</HintPath>
+    </Reference>
+    <Reference Include="Ploeh.AutoFixture.AutoRhinoMock">
+      <HintPath>..\..\packages\AutoFixture.AutoRhinoMocks.3.20.1\lib\net40\Ploeh.AutoFixture.AutoRhinoMock.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhino.Mocks">
+      <HintPath>..\..\packages\RhinoMocks.3.6\lib\Rhino.Mocks.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.4.0.0.0.Fakes">
@@ -68,6 +75,7 @@
   <ItemGroup>
     <Compile Include="TraceProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ZipkinSamplerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Medidata.CrossApplicationTracer\Medidata.CrossApplicationTracer.csproj">
@@ -79,6 +87,8 @@
     <Fakes Include="Fakes\System.Web.fakes" />
     <Fakes Include="Fakes\System.fakes" />
     <Fakes Include="Fakes\mscorlib.fakes" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Choose>

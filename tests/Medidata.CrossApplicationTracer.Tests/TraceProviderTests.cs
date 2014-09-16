@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Web.Fakes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ploeh.AutoFixture;
+using Rhino.Mocks;
 
 namespace Medidata.CrossApplicationTracer.Tests
 {
@@ -20,7 +21,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
-            Assert.AreEqual(null, traceProvider.IsSampled);
+            Assert.AreEqual(false, traceProvider.IsSampled);
         }
 
         [TestMethod]
@@ -52,7 +53,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            var traceProvider = new TraceProvider(httpContextFake);
+            var traceProvider = new TraceProvider(httpContext:httpContextFake);
 
             // Assert
             Assert.AreEqual(traceId, traceProvider.TraceId);
@@ -87,15 +88,20 @@ namespace Medidata.CrossApplicationTracer.Tests
                 ItemsGet = () => new ListDictionary()
             };
 
+            var expectedIsSampled = fixture.Create<bool>();
+            var sampleFilter = MockRepository.GenerateStub<ZipkinSampler>(fixture.Create<string>(), fixture.Create<string>());
+            sampleFilter.Expect(x => x.ShouldBeSampled(httpContextFake, null)).Return(expectedIsSampled);
+
             // Act
-            var traceProvider = new TraceProvider(httpContextFake);
+            var traceProvider = new TraceProvider(sampleFilter, httpContextFake);
 
             // Assert
             Assert.AreEqual(traceId, traceProvider.TraceId);
             Assert.AreEqual(spanId, traceProvider.SpanId);
             Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
-            Assert.AreEqual(null, traceProvider.IsSampled);
+            Assert.AreEqual(expectedIsSampled, traceProvider.IsSampled);
         }
+
         [TestMethod]
         public void ConstructorWithHttpContextHavingInvalidIdValues()
         {
@@ -123,15 +129,19 @@ namespace Medidata.CrossApplicationTracer.Tests
                 ItemsGet = () => new ListDictionary()
             };
 
+            var expectedIsSampled = fixture.Create<bool>();
+            var sampleFilter = MockRepository.GenerateStub<ZipkinSampler>(fixture.Create<string>(), fixture.Create<string>());
+            sampleFilter.Expect(x => x.ShouldBeSampled(httpContextFake, sampled)).Return(expectedIsSampled);
+
             // Act
-            var traceProvider = new TraceProvider(httpContextFake);
+            var traceProvider = new TraceProvider(sampleFilter, httpContextFake);
 
             // Assert
             Assert.AreNotEqual(traceId, traceProvider.TraceId);
             Convert.ToInt64(traceProvider.TraceId, 16);
             Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
             Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
-            Assert.AreEqual(null, traceProvider.IsSampled);
+            Assert.AreEqual(expectedIsSampled, traceProvider.IsSampled);
         }
 
         [TestMethod]
@@ -168,7 +178,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                 }
             };
 
-            var traceProvider1 = new TraceProvider(httpContextFake1);
+            var traceProvider1 = new TraceProvider(httpContext: httpContextFake1);
 
             var httpContextFake2 = new StubHttpContextBase
             {
@@ -183,7 +193,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            var traceProvider2 = new TraceProvider(httpContextFake2);
+            var traceProvider2 = new TraceProvider(httpContext:httpContextFake2);
 
             // Assert
             Assert.AreEqual(traceProvider2.TraceId, traceProvider1.TraceId);
@@ -220,7 +230,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            new TraceProvider(httpContextFake);
+            new TraceProvider(httpContext: httpContextFake);
         }
 
         [TestMethod]
@@ -250,7 +260,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                 ItemsGet = () => new ListDictionary()
             };
 
-            var traceProvider = new TraceProvider(httpContextFake);
+            var traceProvider = new TraceProvider(httpContext: httpContextFake);
 
             // Act
             var nextTraceProvider = traceProvider.GetNext();

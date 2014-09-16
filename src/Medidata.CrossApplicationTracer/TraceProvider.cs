@@ -32,17 +32,28 @@ namespace Medidata.CrossApplicationTracer
         /// <summary>
         /// Gets IsSampled
         /// </summary>
-        public bool? IsSampled
+        public bool IsSampled
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
         /// Initializes a new instance of the TraceProvider class.
         /// </summary>
         /// <param name="httpContext">the httpContext</param>
-        public TraceProvider(HttpContextBase httpContext = null)
+        /// <param name="dontSampleListCsv">the dontSampleListCsv</param>
+        /// <param name="sampleRate">the sampleRate</param>
+        public TraceProvider(string dontSampleListCsv = null, string sampleRate = null, HttpContextBase httpContext = null) : this
+            (new ZipkinSampler(dontSampleListCsv, sampleRate), httpContext)
+        {}
+
+        /// <summary>
+        /// Initializes a new instance of the TraceProvider class.
+        /// </summary>
+        /// <param name="httpContext">the httpContext</param>
+        /// <param name="zipkinSampler">zipkinSampler instance</param>
+        internal TraceProvider(ZipkinSampler zipkinSampler, HttpContextBase httpContext = null)
         {
             string headerTraceId = null;
             string headerSpanId = null;
@@ -72,7 +83,7 @@ namespace Medidata.CrossApplicationTracer
             TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
             SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
             ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
-            IsSampled = ParseHeaderIsSampled(headerSampled);
+            IsSampled = zipkinSampler.ShouldBeSampled(httpContext, headerSampled);
            
             if (SpanId == ParentSpanId)
             {
@@ -118,16 +129,6 @@ namespace Medidata.CrossApplicationTracer
         {
             long result;
             return !string.IsNullOrWhiteSpace(value) && Int64.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
-        }
-
-        private bool? ParseHeaderIsSampled(string value)
-        {
-            bool result;
-            if (!string.IsNullOrWhiteSpace(value) && Boolean.TryParse(value, out result))
-            {
-                return result;
-            }
-            return null;
         }
 
         /// <summary>
