@@ -44,7 +44,7 @@ namespace Medidata.CrossApplicationTracer
         /// <param name="httpContext">the httpContext</param>
         /// <param name="dontSampleListCsv">the dontSampleListCsv</param>
         /// <param name="sampleRate">the sampleRate</param>
-        public TraceProvider(string dontSampleListCsv = null, string sampleRate = null, HttpContextBase httpContext = null) : this
+        public TraceProvider(HttpContextBase httpContext = null, string dontSampleListCsv = null, string sampleRate = null) : this
             (new ZipkinSampler(dontSampleListCsv, sampleRate), httpContext)
         {}
 
