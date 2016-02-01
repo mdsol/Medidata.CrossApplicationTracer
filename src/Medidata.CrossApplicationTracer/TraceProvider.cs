@@ -17,17 +17,17 @@ namespace Medidata.CrossApplicationTracer
         /// <summary>
         /// Gets a TraceId
         /// </summary>
-        public string TraceId { get; private set; }
+        public string TraceId { get; internal set; }
 
         /// <summary>
         /// Gets a SpanId
         /// </summary>
-        public string SpanId { get; private set; }
+        public string SpanId { get; internal set; }
 
         /// <summary>
         /// Gets a ParentSpanId
         /// </summary>
-        public string ParentSpanId { get; private set; }
+        public string ParentSpanId { get; internal set; }
 
         /// <summary>
         /// Gets IsSampled
@@ -35,7 +35,7 @@ namespace Medidata.CrossApplicationTracer
         public bool IsSampled
         {
             get;
-            private set;
+            internal set;
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Medidata.CrossApplicationTracer
         /// Generate a hex encoded Int64 from new Guid.
         /// </summary>
         /// <returns>The hex encoded int64</returns>
-        private string GenerateHexEncodedInt64FromNewGuid()
+        internal string GenerateHexEncodedInt64FromNewGuid()
         {
             return Convert.ToString(BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0), 16);
         }
