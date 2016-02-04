@@ -12,20 +12,20 @@ namespace Medidata.CrossApplicationTracer.Tests
     public class TraceProviderTests
     {
         [TestMethod]
-        public void ConstructorWithNullHttpContext()
+        public void GenerateTraceWithNullHttpContext()
         {
             // Arrange & Act
-            var traceProvider = new TraceProvider();
+            var trace = TraceProvider.GenerateTrace(null, null, null);
 
             // Assert
-            Convert.ToInt64(traceProvider.TraceId, 16);
-            Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
-            Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
-            Assert.AreEqual(false, traceProvider.IsSampled);
+            Convert.ToInt64(trace.TraceId, 16);
+            Assert.AreEqual(trace.TraceId, trace.SpanId);
+            Assert.AreEqual(string.Empty, trace.ParentSpanId);
+            Assert.AreEqual(false, trace.IsSampled);
         }
 
         [TestMethod]
-        public void ConstructorWithHttpContextHavingAllIdValues()
+        public void GenerateTraceWithHttpContextHavingAllIdValues()
         {
             // Arrange
             var fixture = new Fixture();
@@ -53,17 +53,17 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            var traceProvider = new TraceProvider(httpContext:httpContextFake);
+            var trace = TraceProvider.GenerateTrace(httpContextFake, null, null);
 
             // Assert
-            Assert.AreEqual(traceId, traceProvider.TraceId);
-            Assert.AreEqual(spanId, traceProvider.SpanId);
-            Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
-            Assert.AreEqual(isSampled, traceProvider.IsSampled);
+            Assert.AreEqual(traceId, trace.TraceId);
+            Assert.AreEqual(spanId, trace.SpanId);
+            Assert.AreEqual(parentSpanId, trace.ParentSpanId);
+            Assert.AreEqual(isSampled, trace.IsSampled);
         }
 
         [TestMethod]
-        public void ConstructorWithHttpContextHavingIdValuesExceptIsSampled()
+        public void GenerateTraceWithHttpContextHavingIdValuesExceptIsSampled()
         {
             // Arrange
             var fixture = new Fixture();
@@ -93,17 +93,17 @@ namespace Medidata.CrossApplicationTracer.Tests
             sampleFilter.Expect(x => x.ShouldBeSampled(httpContextFake, null)).Return(expectedIsSampled);
 
             // Act
-            var traceProvider = new TraceProvider(sampleFilter, httpContextFake);
+            var trace = TraceProvider.GenerateTrace(sampleFilter, httpContextFake);
 
             // Assert
-            Assert.AreEqual(traceId, traceProvider.TraceId);
-            Assert.AreEqual(spanId, traceProvider.SpanId);
-            Assert.AreEqual(parentSpanId, traceProvider.ParentSpanId);
-            Assert.AreEqual(expectedIsSampled, traceProvider.IsSampled);
+            Assert.AreEqual(traceId, trace.TraceId);
+            Assert.AreEqual(spanId, trace.SpanId);
+            Assert.AreEqual(parentSpanId, trace.ParentSpanId);
+            Assert.AreEqual(expectedIsSampled, trace.IsSampled);
         }
 
         [TestMethod]
-        public void ConstructorWithHttpContextHavingInvalidIdValues()
+        public void GenerateTraceWithHttpContextHavingInvalidIdValues()
         {
             // Arrange
             var fixture = new Fixture();
@@ -134,18 +134,18 @@ namespace Medidata.CrossApplicationTracer.Tests
             sampleFilter.Expect(x => x.ShouldBeSampled(httpContextFake, sampled)).Return(expectedIsSampled);
 
             // Act
-            var traceProvider = new TraceProvider(sampleFilter, httpContextFake);
+            var trace = TraceProvider.GenerateTrace(sampleFilter, httpContextFake);
 
             // Assert
-            Assert.AreNotEqual(traceId, traceProvider.TraceId);
-            Convert.ToInt64(traceProvider.TraceId, 16);
-            Assert.AreEqual(traceProvider.TraceId, traceProvider.SpanId);
-            Assert.AreEqual(string.Empty, traceProvider.ParentSpanId);
-            Assert.AreEqual(expectedIsSampled, traceProvider.IsSampled);
+            Assert.AreNotEqual(traceId, trace.TraceId);
+            Convert.ToInt64(trace.TraceId, 16);
+            Assert.AreEqual(trace.TraceId, trace.SpanId);
+            Assert.AreEqual(string.Empty, trace.ParentSpanId);
+            Assert.AreEqual(expectedIsSampled, trace.IsSampled);
         }
 
         [TestMethod]
-        public void ConstructorWithHavingTraceProviderInHttpContext()
+        public void GenerateTraceWithHavingTraceProviderInHttpContext()
         {
             // Arrange
             var fixture = new Fixture();
@@ -178,7 +178,7 @@ namespace Medidata.CrossApplicationTracer.Tests
                 }
             };
 
-            var traceProvider1 = new TraceProvider(httpContext: httpContextFake1);
+            var trace1 = TraceProvider.GenerateTrace(httpContextFake1, null, null);
 
             var httpContextFake2 = new StubHttpContextBase
             {
@@ -186,25 +186,25 @@ namespace Medidata.CrossApplicationTracer.Tests
                 RequestGet = () => httpRequestFake,
                 ItemsGet = () => new StubIDictionary
                 {
-                    ItemGetObject = (k) => traceProvider1,
+                    ItemGetObject = (k) => trace1,
                     ItemSetObjectObject = (k, v) => { },
                     ContainsObject = (k) => true
                 }
             };
 
             // Act
-            var traceProvider2 = new TraceProvider(httpContext:httpContextFake2);
+            var trace2 = TraceProvider.GenerateTrace(httpContextFake2, null, null);
 
             // Assert
-            Assert.AreEqual(traceProvider2.TraceId, traceProvider1.TraceId);
-            Assert.AreEqual(traceProvider2.SpanId, traceProvider1.SpanId);
-            Assert.AreEqual(traceProvider2.ParentSpanId, traceProvider1.ParentSpanId);
-            Assert.AreEqual(traceProvider2.IsSampled, traceProvider1.IsSampled);
+            Assert.AreEqual(trace2.TraceId, trace1.TraceId);
+            Assert.AreEqual(trace2.SpanId, trace1.SpanId);
+            Assert.AreEqual(trace2.ParentSpanId, trace1.ParentSpanId);
+            Assert.AreEqual(trace2.IsSampled, trace1.IsSampled);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ConstructorWithHttpContextHavingSameSpanAndParentSpan()
+        public void GenerateTraceWithHttpContextHavingSameSpanAndParentSpan()
         {
             // Arrange
             var fixture = new Fixture();
@@ -230,46 +230,7 @@ namespace Medidata.CrossApplicationTracer.Tests
             };
 
             // Act
-            new TraceProvider(httpContext: httpContextFake);
-        }
-
-        [TestMethod]
-        public void GetNext()
-        {
-            // Arrange
-            var fixture = new Fixture();
-            var traceId = fixture.Create<long>().ToString();
-            var spanId = fixture.Create<long>().ToString();
-            var parentSpanId = fixture.Create<long>().ToString();
-            var sampled = Convert.ToString(fixture.Create<bool>());
-
-            var httpRequestFake = new StubHttpRequestBase
-            {
-                HeadersGet = () => new NameValueCollection
-                {
-                    { "X-B3-TraceId", traceId },
-                    { "X-B3-SpanId", spanId },
-                    { "X-B3-ParentSpanId", parentSpanId },
-                    { "X-B3-Sampled", sampled },
-                }
-            };
-
-            var httpContextFake = new StubHttpContextBase
-            {
-                RequestGet = () => httpRequestFake,
-                ItemsGet = () => new ListDictionary()
-            };
-
-            var traceProvider = new TraceProvider(httpContext: httpContextFake);
-
-            // Act
-            var nextTraceProvider = traceProvider.GetNext();
-
-            // Assert
-            Assert.AreEqual(traceProvider.TraceId, nextTraceProvider.TraceId);
-            Convert.ToInt64(nextTraceProvider.SpanId, 16);
-            Assert.AreEqual(traceProvider.SpanId, nextTraceProvider.ParentSpanId);
-            Assert.AreEqual(traceProvider.IsSampled, nextTraceProvider.IsSampled);
+            TraceProvider.GenerateTrace(httpContextFake, null, null);
         }
     }
 }

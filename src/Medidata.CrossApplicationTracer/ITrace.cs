@@ -1,9 +1,11 @@
-﻿namespace Medidata.CrossApplicationTracer
+﻿using System.Net;
+
+namespace Medidata.CrossApplicationTracer
 {
     /// <summary>
-    /// TraceProvider interface
+    /// Trace interface
     /// </summary>
-    public interface ITraceProvider
+    public interface ITrace
     {
         /// <summary>
         /// Gets a TraceId
@@ -29,6 +31,12 @@
         /// Gets a Trace for outgoing HTTP request.
         /// </summary>
         /// <returns>The trace</returns>
-        ITraceProvider GetNext();
+        ITrace GetNext();
+
+        /// <summary>
+        /// Adds trace information to headers
+        /// </summary>
+        /// <param name="headers"></param>
+        void AddTraceHeaders(WebHeaderCollection headers);
     }
 }

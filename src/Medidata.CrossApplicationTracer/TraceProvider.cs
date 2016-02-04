@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Web;
 
 namespace Medidata.CrossApplicationTracer
@@ -7,7 +6,7 @@ namespace Medidata.CrossApplicationTracer
     /// <summary>
     /// TraceProvider class
     /// </summary>
-    public class TraceProvider : ITraceProvider
+    public static class TraceProvider
     {
         /// <summary>
         /// Key name for HttpContext.Items
@@ -15,100 +14,63 @@ namespace Medidata.CrossApplicationTracer
         private const string KEY = "Medidata.CrossApplicationTracer.TraceProvider";
 
         /// <summary>
-        /// Gets a TraceId
+        /// Generate trace
         /// </summary>
-        public string TraceId { get; private set; }
-
-        /// <summary>
-        /// Gets a SpanId
-        /// </summary>
-        public string SpanId { get; private set; }
-
-        /// <summary>
-        /// Gets a ParentSpanId
-        /// </summary>
-        public string ParentSpanId { get; private set; }
-
-        /// <summary>
-        /// Gets IsSampled
-        /// </summary>
-        public bool IsSampled
+        /// <param name="httpContext"></param>
+        /// <param name="dontSampleListCsv"></param>
+        /// <param name="sampleRate"></param>
+        /// <returns></returns>
+        public static ITrace GenerateTrace(HttpContextBase httpContext, string dontSampleListCsv, string sampleRate)
         {
-            get;
-            private set;
+            return GenerateTrace(new ZipkinSampler(dontSampleListCsv, sampleRate), httpContext);
         }
 
         /// <summary>
-        /// Initializes a new instance of the TraceProvider class.
+        /// Generate trace
+        /// Able to mock zipkins sampler in unit tests
         /// </summary>
-        /// <param name="httpContext">the httpContext</param>
-        /// <param name="dontSampleListCsv">the dontSampleListCsv</param>
-        /// <param name="sampleRate">the sampleRate</param>
-        public TraceProvider(HttpContextBase httpContext = null, string dontSampleListCsv = null, string sampleRate = null) : this
-            (new ZipkinSampler(dontSampleListCsv, sampleRate), httpContext)
-        {}
-
-        /// <summary>
-        /// Initializes a new instance of the TraceProvider class.
-        /// </summary>
-        /// <param name="httpContext">the httpContext</param>
-        /// <param name="zipkinSampler">zipkinSampler instance</param>
-        internal TraceProvider(ZipkinSampler zipkinSampler, HttpContextBase httpContext = null)
+        /// <param name="zipkinSampler"></param>
+        /// <param name="httpContext"></param>
+        /// <returns></returns>
+        internal static ITrace GenerateTrace(ZipkinSampler zipkinSampler, HttpContextBase httpContext)
         {
             string headerTraceId = null;
             string headerSpanId = null;
             string headerParentSpanId = null;
             string headerSampled = null;
+            ITrace trace;
 
             if (IsValidRequest(httpContext))
             {
                 if (httpContext.Items.Contains(KEY))
                 {
                     // set properties from context's item.
-                    var provider = httpContext.Items[KEY] as ITraceProvider;
-                    TraceId = provider.TraceId;
-                    SpanId = provider.SpanId;
-                    ParentSpanId = provider.ParentSpanId;
-                    IsSampled = provider.IsSampled;
-                    return;
+                    trace = httpContext.Items[KEY] as Trace;
+                    return trace;
                 }
 
                 // zipkin use the following X-Headers to propagate the trace information
-                headerTraceId = httpContext.Request.Headers["X-B3-TraceId"];
-                headerSpanId = httpContext.Request.Headers["X-B3-SpanId"];
-                headerParentSpanId = httpContext.Request.Headers["X-B3-ParentSpanId"];
-                headerSampled = httpContext.Request.Headers["X-B3-Sampled"];
+                headerTraceId = httpContext.Request.Headers[Trace.HeaderTraceIdKey];
+                headerSpanId = httpContext.Request.Headers[Trace.HeaderSpanIdKey];
+                headerParentSpanId = httpContext.Request.Headers[Trace.HeaderParentSpanIdKey];
+                headerSampled = httpContext.Request.Headers[Trace.HeaderSampledKey];
             }
 
-            TraceId = Parse(headerTraceId) ? headerTraceId : GenerateHexEncodedInt64FromNewGuid();
-            SpanId = Parse(headerSpanId) ? headerSpanId : TraceId;
-            ParentSpanId = Parse(headerParentSpanId) ? headerParentSpanId : string.Empty;
-            IsSampled = zipkinSampler.ShouldBeSampled(httpContext, headerSampled);
-           
-            if (SpanId == ParentSpanId)
+
+            var isSampled = zipkinSampler.ShouldBeSampled(httpContext, headerSampled);
+            trace = new Trace(headerTraceId, headerSpanId, headerParentSpanId, isSampled);
+
+            if (trace.SpanId == trace.ParentSpanId)
             {
-                throw new ArgumentException("x-b3-SpanId and x-b3-ParentSpanId must not be the same value.");
+                throw new ArgumentException("SpanId and ParentSpanId must not be the same value.");
             }
 
             if (IsValidRequest(httpContext))
             {
-                httpContext.Items[KEY] = this;
+                httpContext.Items[KEY] = trace;
             }
-        }
 
-        /// <summary>
-        /// Gets a Trace for outgoing HTTP request.
-        /// </summary>
-        /// <returns>The trace</returns>
-        public ITraceProvider GetNext()
-        {
-            return new TraceProvider
-            {
-                TraceId = this.TraceId,
-                SpanId = GenerateHexEncodedInt64FromNewGuid(),
-                ParentSpanId = this.SpanId,
-                IsSampled = this.IsSampled
-            };
+            return trace;
         }
 
         /// <summary>
@@ -118,26 +80,6 @@ namespace Medidata.CrossApplicationTracer
         private static bool IsValidRequest(HttpContextBase httpContext)
         {
             return httpContext != null && httpContext.Items != null && httpContext.Request != null;
-        }
-
-        /// <summary>
-        /// Parse id value
-        /// </summary>
-        /// <param name="value">header's value</param>
-        /// <returns>true: parsed</returns>
-        private bool Parse(string value)
-        {
-            long result;
-            return !string.IsNullOrWhiteSpace(value) && Int64.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
-        }
-
-        /// <summary>
-        /// Generate a hex encoded Int64 from new Guid.
-        /// </summary>
-        /// <returns>The hex encoded int64</returns>
-        private string GenerateHexEncodedInt64FromNewGuid()
-        {
-            return Convert.ToString(BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0), 16);
         }
     }
 }

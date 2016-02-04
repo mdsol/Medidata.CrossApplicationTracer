@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Medidata.CrossApplicationTracer
 {
+    /// <summary>
+    /// Handles sampling rate and path blacklist
+    /// </summary>
     public class ZipkinSampler
     {
         private static Random random = new Random();
@@ -13,6 +14,11 @@ namespace Medidata.CrossApplicationTracer
         internal readonly List<string> dontSampleList;
         internal readonly float sampleRate;
       
+        /// <summary>
+        /// Zipkin Samplre constuctor
+        /// </summary>
+        /// <param name="dontSampleListCsv"></param>
+        /// <param name="configSampleRate"></param>
         public ZipkinSampler(string dontSampleListCsv, string configSampleRate)
         {
             var dontSampleList = new List<string>();
@@ -44,9 +50,15 @@ namespace Medidata.CrossApplicationTracer
             return false;
         }
 
+        /// <summary>
+        /// Calculates if current request should be sampled
+        /// </summary>
+        /// <param name="httpContext"></param>
+        /// <param name="sampled"></param>
+        /// <returns></returns>
         public virtual bool ShouldBeSampled(System.Web.HttpContextBase httpContext, string sampled)
         {
-            if ( httpContext == null )
+            if (httpContext == null)
             {
                 return false;
             }
@@ -57,9 +69,9 @@ namespace Medidata.CrossApplicationTracer
                 return result;
             }
 
-            if ( ! IsInDontSampleList(httpContext.Request.Path))
+            if (!IsInDontSampleList(httpContext.Request.Path))
             {
-                if ( random.NextDouble() <= sampleRate )
+                if (random.NextDouble() <= sampleRate)
                 {
                     return true;
                 }
