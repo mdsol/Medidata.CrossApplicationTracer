@@ -32,22 +32,22 @@ namespace Medidata.CrossApplicationTracer
         /// <summary>
         /// Gets a TraceId
         /// </summary>
-        public string TraceId { get; }
+        public string TraceId { get; private set; }
 
         /// <summary>
         /// Gets a SpanId
         /// </summary>
-        public string SpanId { get; }
+        public string SpanId { get; private set; }
 
         /// <summary>
         /// Gets a ParentSpanId
         /// </summary>
-        public string ParentSpanId { get; }
+        public string ParentSpanId { get; private set; }
 
         /// <summary>
         /// Gets IsSampled
         /// </summary>
-        public bool IsSampled { get; }
+        public bool IsSampled { get; private set; }
 
         /// <summary>
         /// Constructor
