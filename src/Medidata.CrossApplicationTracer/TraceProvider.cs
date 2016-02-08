@@ -97,18 +97,31 @@ namespace Medidata.CrossApplicationTracer
         }
 
         /// <summary>
+        /// private constructor to accept property values
+        /// </summary>
+        /// <param name="traceId"></param>
+        /// <param name="spanId"></param>
+        /// <param name="parentSpanId"></param>
+        /// <param name="isSampled"></param>
+        private TraceProvider(string traceId, string spanId, string parentSpanId, bool isSampled)
+        {
+            TraceId = traceId;
+            SpanId = spanId;
+            ParentSpanId = parentSpanId;
+            IsSampled = isSampled;
+        }
+
+        /// <summary>
         /// Gets a Trace for outgoing HTTP request.
         /// </summary>
         /// <returns>The trace</returns>
         public ITraceProvider GetNext()
         {
-            return new TraceProvider
-            {
-                TraceId = this.TraceId,
-                SpanId = GenerateHexEncodedInt64FromNewGuid(),
-                ParentSpanId = this.SpanId,
-                IsSampled = this.IsSampled
-            };
+            return new TraceProvider(
+                TraceId,
+                GenerateHexEncodedInt64FromNewGuid(),
+                SpanId,
+                IsSampled);
         }
 
         /// <summary>
