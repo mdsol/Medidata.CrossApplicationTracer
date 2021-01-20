@@ -1,3 +1,10 @@
+# Deprecated
+
+This repository is deprecated.
+
+The information below is left only as a reference.
+
+
 # Medidata.CrossApplicationTracer
 Implements a cross application tracer that provides traceId, spanId and parentSpanId for logging.
 This package is compatible with ZipkinTracerModule. Therefore, we are passing cross-application tracing details in HTTP requests in a Zipkin-compliant way.
